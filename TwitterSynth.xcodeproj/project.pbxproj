@@ -22,14 +22,14 @@
 		5AACA1F51582E23A0012C2E4 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		5AACA1F71582E23A0012C2E4 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		5AACA1F91582E23A0012C2E4 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
-		5AACA1FD1582E23A0012C2E4 /* TwitterSynth-Info.plist */ = {isa = PBXFileReference; path = "TwitterSynth-Info.plist"; sourceTree = "<group>"; };
+		5AACA1FD1582E23A0012C2E4 /* TwitterSynth-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "TwitterSynth-Info.plist"; sourceTree = "<group>"; };
 		5AACA1FF1582E23A0012C2E4 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		5AACA2011582E23A0012C2E4 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		5AACA2031582E23A0012C2E4 /* TwitterSynth-Prefix.pch */ = {isa = PBXFileReference; path = "TwitterSynth-Prefix.pch"; sourceTree = "<group>"; };
-		5AACA2041582E23A0012C2E4 /* WFBAppDelegate.h */ = {isa = PBXFileReference; path = WFBAppDelegate.h; sourceTree = "<group>"; };
+		5AACA2031582E23A0012C2E4 /* TwitterSynth-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "TwitterSynth-Prefix.pch"; sourceTree = "<group>"; };
+		5AACA2041582E23A0012C2E4 /* WFBAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WFBAppDelegate.h; sourceTree = "<group>"; };
 		5AACA2051582E23A0012C2E4 /* WFBAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WFBAppDelegate.m; sourceTree = "<group>"; };
 		5AACA2081582E23A0012C2E4 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = en; path = en.lproj/MainStoryboard.storyboard; sourceTree = "<group>"; };
-		5AACA20A1582E23A0012C2E4 /* WFBViewController.h */ = {isa = PBXFileReference; path = WFBViewController.h; sourceTree = "<group>"; };
+		5AACA20A1582E23A0012C2E4 /* WFBViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WFBViewController.h; sourceTree = "<group>"; };
 		5AACA20B1582E23A0012C2E4 /* WFBViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WFBViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
