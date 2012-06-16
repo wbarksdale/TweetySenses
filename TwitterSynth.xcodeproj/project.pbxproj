@@ -15,6 +15,7 @@
 		5AACA2061582E23A0012C2E4 /* WFBAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 5AACA2051582E23A0012C2E4 /* WFBAppDelegate.m */; };
 		5AACA2091582E23A0012C2E4 /* MainStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5AACA2071582E23A0012C2E4 /* MainStoryboard.storyboard */; };
 		5AACA20C1582E23A0012C2E4 /* WFBViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5AACA20B1582E23A0012C2E4 /* WFBViewController.m */; };
+		5AACA2141582E7640012C2E4 /* WFBTwitterStream.m in Sources */ = {isa = PBXBuildFile; fileRef = 5AACA2131582E7640012C2E4 /* WFBTwitterStream.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -31,6 +32,8 @@
 		5AACA2081582E23A0012C2E4 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = en; path = en.lproj/MainStoryboard.storyboard; sourceTree = "<group>"; };
 		5AACA20A1582E23A0012C2E4 /* WFBViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WFBViewController.h; sourceTree = "<group>"; };
 		5AACA20B1582E23A0012C2E4 /* WFBViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WFBViewController.m; sourceTree = "<group>"; };
+		5AACA2121582E7640012C2E4 /* WFBTwitterStream.h */ = {isa = PBXFileReference; fileEncoding = 4; path = WFBTwitterStream.h; sourceTree = "<group>"; };
+		5AACA2131582E7640012C2E4 /* WFBTwitterStream.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFBTwitterStream.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -83,6 +86,8 @@
 				5AACA20A1582E23A0012C2E4 /* WFBViewController.h */,
 				5AACA20B1582E23A0012C2E4 /* WFBViewController.m */,
 				5AACA1FC1582E23A0012C2E4 /* Supporting Files */,
+				5AACA2121582E7640012C2E4 /* WFBTwitterStream.h */,
+				5AACA2131582E7640012C2E4 /* WFBTwitterStream.m */,
 			);
 			path = TwitterSynth;
 			sourceTree = "<group>";
@@ -165,6 +170,7 @@
 				5AACA2021582E23A0012C2E4 /* main.m in Sources */,
 				5AACA2061582E23A0012C2E4 /* WFBAppDelegate.m in Sources */,
 				5AACA20C1582E23A0012C2E4 /* WFBViewController.m in Sources */,
+				5AACA2141582E7640012C2E4 /* WFBTwitterStream.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -276,6 +282,7 @@
 				5AACA2111582E23A0012C2E4 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

@@ -7,7 +7,10 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "WFBTwitterStream.h"
 
 @interface WFBViewController : UIViewController
-
+{
+    WFBTwitterStream *twitterStream;
+}
 @end

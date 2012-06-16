@@ -8,16 +8,14 @@
 
 #import "WFBViewController.h"
 
-@interface WFBViewController ()
-
-@end
-
 @implementation WFBViewController
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
+    NSArray *keywords = [[NSArray alloc] initWithObjects:@"happy", @"sad", nil];
+    twitterStream = [[WFBTwitterStream alloc] initWithKeywords:keywords];
 }
 
 - (void)viewDidUnload
