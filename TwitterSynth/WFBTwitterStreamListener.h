@@ -11,5 +11,6 @@
 @protocol WFBTwitterStreamListener <NSObject>
 
 - (void) receiveTweet:(NSDictionary *) tweet;
+- (void) laggingStream: (NSString *) message;
 
 @end

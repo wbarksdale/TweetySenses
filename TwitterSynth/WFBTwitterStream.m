@@ -12,10 +12,13 @@
 
 @synthesize keywords;
 @synthesize listener;
+@synthesize swCorner;
+@synthesize neCorner;
 
 -(id) initWithKeywords:(NSArray *) keywordsArray andListener:(id<WFBTwitterStreamListener>) listner_id{
     self.listener = listner_id;
     self.keywords = [[NSMutableArray alloc] initWithArray: keywordsArray];
+    
     //set up the tacking
     NSMutableString *trackString = [[NSMutableString alloc] initWithString:@"track="];
     for(int i = 0; i<keywords.count; i++){
@@ -25,12 +28,33 @@
         else 
            [trackString appendString:[NSString stringWithFormat:@",%@", word]]; 
     }
+    //changed delimiter to &, havent tested to see if it works
+    [trackString appendString:@"&stall_warnings=true"];
     
-    NSLog(@"trackString = %@", trackString);
+    NSString *requestBody = [NSString stringWithString:trackString];
+    NSLog(@"twitter reqeust body:\n%@\n\n", requestBody);
+    [self sendTwitterStreamingRequestWithBody:trackString];
+    return self;
+}
+
+-(id) initWithSWCorner:(CLLocationCoordinate2D) southWest NECorner: (CLLocationCoordinate2D) northEast listener:(id<WFBTwitterStreamListener>)listener_id;
+{
+    self.listener = listener_id;
+    self.swCorner = southWest;
+    self.neCorner = northEast;
     
-    NSData* postData = [trackString dataUsingEncoding:NSUTF8StringEncoding];
-    
+    NSMutableString *geoBoxSpec = [[NSMutableString alloc] initWithString:@"locations="];
+    [geoBoxSpec appendString:[NSString stringWithFormat:@"%f,%f,%f,%f", southWest.longitude, southWest.latitude, northEast.longitude, northEast.latitude]];
+    [geoBoxSpec appendString:@"&stall_warings=true"];
+    NSString *requestBody = [NSString stringWithString:geoBoxSpec];
+    NSLog(@"twitter request body: \n%@\n\n", requestBody);
+    [self sendTwitterStreamingRequestWithBody:requestBody];
+    return self;
+}
+
+-(void) sendTwitterStreamingRequestWithBody:(NSString *) body{
     //set up the request
+    NSData* postData = [body dataUsingEncoding:NSUTF8StringEncoding];
     NSURL *url = [NSURL URLWithString:@"https://stream.twitter.com/1/statuses/filter.json"];
     NSMutableURLRequest *request= [[NSMutableURLRequest alloc] initWithURL:url];
     [request setHTTPMethod:@"POST"];
@@ -38,10 +62,7 @@
     NSString *authString = [self Base64Encode:[@"whatwillreads:Tao1tao1" dataUsingEncoding:NSUTF8StringEncoding]];
     [request setValue:authString forHTTPHeaderField:@"Authorization"];
     [request setHTTPBody:postData];
-    
     [NSURLConnection connectionWithRequest:request delegate:self];
-    
-    return self;
 }
 
 // NSURLConnection Delegates
@@ -70,7 +91,11 @@
     //pul
     //NSLog(@"got some data: \n\n %@ \n\n", [data description]);
     NSError *error;
-    NSDictionary *jsonDictionary = [NSJSONSerialization JSONObjectWithData:data options:nil error:&error];
+    NSDictionary *jsonDictionary = [NSJSONSerialization JSONObjectWithData:data options:NSJSONWritingPrettyPrinted error:&error];
+    NSDictionary *warning = [jsonDictionary objectForKey:@"warning"];
+    if(warning){
+        [listener laggingStream:[warning objectForKey:@"message"]];
+    }
     [listener receiveTweet:jsonDictionary];
 }
 
