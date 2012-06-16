@@ -11,8 +11,10 @@
 @implementation WFBTwitterStream
 
 @synthesize keywords;
+@synthesize listener;
 
--(id) initWithKeywords:(NSArray *) keywordsArray{
+-(id) initWithKeywords:(NSArray *) keywordsArray andListener:(id<WFBTwitterStreamListener>) listner_id{
+    self.listener = listner_id;
     self.keywords = [[NSMutableArray alloc] initWithArray: keywordsArray];
     //set up the tacking
     NSMutableString *trackString = [[NSMutableString alloc] initWithString:@"track="];
@@ -40,6 +42,44 @@
     [NSURLConnection connectionWithRequest:request delegate:self];
     
     return self;
+}
+
+// NSURLConnection Delegates
+- (void)connection:(NSURLConnection *)connection didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge {
+    if ([challenge previousFailureCount] == 0) {
+        NSLog(@"received authentication challenge");
+        NSURLCredential *newCredential = [NSURLCredential credentialWithUser:@"whatwillreads"
+                                                                    password:@"Tao1tao1"
+                                                                 persistence:NSURLCredentialPersistenceForSession];
+        NSLog(@"credential created");
+        [[challenge sender] useCredential:newCredential forAuthenticationChallenge:challenge];
+        NSLog(@"responded to authentication challenge");    
+    }
+    else {
+        NSLog(@"previous authentication failure");
+    }
+}
+
+- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response {
+    NSHTTPURLResponse *resp = (NSHTTPURLResponse *) response;
+    NSLog(@"got a response: \n\n %d \n\n", [resp statusCode]);
+    
+}
+
+- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data {
+    //pul
+    //NSLog(@"got some data: \n\n %@ \n\n", [data description]);
+    NSError *error;
+    NSDictionary *jsonDictionary = [NSJSONSerialization JSONObjectWithData:data options:nil error:&error];
+    [listener receiveTweet:jsonDictionary];
+}
+
+- (void)connectionDidFinishLoading:(NSURLConnection *)connection {
+    NSLog(@"connection loaded");
+}
+
+- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error {
+    NSLog(@"connection failed");
 }
 
 -(NSString *)Base64Encode:(NSData *)data{
@@ -107,38 +147,5 @@
     NSString *pictemp = [NSString stringWithUTF8String:outputBuffer];
     free(outputBuffer); 
     return pictemp;
-}
-
-// NSURLConnection Delegates
-- (void)connection:(NSURLConnection *)connection didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge {
-    if ([challenge previousFailureCount] == 0) {
-        NSLog(@"received authentication challenge");
-        NSURLCredential *newCredential = [NSURLCredential credentialWithUser:@"whatwillreads"
-                                                                    password:@"Tao1tao1"
-                                                                 persistence:NSURLCredentialPersistenceForSession];
-        NSLog(@"credential created");
-        [[challenge sender] useCredential:newCredential forAuthenticationChallenge:challenge];
-        NSLog(@"responded to authentication challenge");    
-    }
-    else {
-        NSLog(@"previous authentication failure");
-    }
-}
-
-- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response {
-    NSHTTPURLResponse *resp = (NSHTTPURLResponse *) response;
-    NSLog(@"got a response: \n\n %d \n\n", [resp statusCode]);
-}
-
-- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data {
-    NSLog(@"got some data: \n\n %@ \n\n", [data description]);
-}
-
-- (void)connectionDidFinishLoading:(NSURLConnection *)connection {
-    NSLog(@"connection loaded");
-}
-
-- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error {
-    NSLog(@"connection failed");
 }
 @end

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5A040005158C0E0D00611417 /* WFBTweetDataAnalyzer.m in Sources */ = {isa = PBXBuildFile; fileRef = 5A040004158C0E0D00611417 /* WFBTweetDataAnalyzer.m */; };
 		5AACA1F61582E23A0012C2E4 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5AACA1F51582E23A0012C2E4 /* UIKit.framework */; };
 		5AACA1F81582E23A0012C2E4 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5AACA1F71582E23A0012C2E4 /* Foundation.framework */; };
 		5AACA1FA1582E23A0012C2E4 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5AACA1F91582E23A0012C2E4 /* CoreGraphics.framework */; };
@@ -19,6 +20,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		5A040003158C0E0D00611417 /* WFBTweetDataAnalyzer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFBTweetDataAnalyzer.h; sourceTree = "<group>"; };
+		5A040004158C0E0D00611417 /* WFBTweetDataAnalyzer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFBTweetDataAnalyzer.m; sourceTree = "<group>"; };
+		5A040006158C11EB00611417 /* WFBTwitterStreamListener.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WFBTwitterStreamListener.h; sourceTree = "<group>"; };
 		5AACA1F11582E23A0012C2E4 /* TwitterSynth.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TwitterSynth.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5AACA1F51582E23A0012C2E4 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		5AACA1F71582E23A0012C2E4 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -32,7 +36,7 @@
 		5AACA2081582E23A0012C2E4 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = en; path = en.lproj/MainStoryboard.storyboard; sourceTree = "<group>"; };
 		5AACA20A1582E23A0012C2E4 /* WFBViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WFBViewController.h; sourceTree = "<group>"; };
 		5AACA20B1582E23A0012C2E4 /* WFBViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WFBViewController.m; sourceTree = "<group>"; };
-		5AACA2121582E7640012C2E4 /* WFBTwitterStream.h */ = {isa = PBXFileReference; fileEncoding = 4; path = WFBTwitterStream.h; sourceTree = "<group>"; };
+		5AACA2121582E7640012C2E4 /* WFBTwitterStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFBTwitterStream.h; sourceTree = "<group>"; };
 		5AACA2131582E7640012C2E4 /* WFBTwitterStream.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFBTwitterStream.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -85,9 +89,12 @@
 				5AACA2071582E23A0012C2E4 /* MainStoryboard.storyboard */,
 				5AACA20A1582E23A0012C2E4 /* WFBViewController.h */,
 				5AACA20B1582E23A0012C2E4 /* WFBViewController.m */,
-				5AACA1FC1582E23A0012C2E4 /* Supporting Files */,
 				5AACA2121582E7640012C2E4 /* WFBTwitterStream.h */,
 				5AACA2131582E7640012C2E4 /* WFBTwitterStream.m */,
+				5A040003158C0E0D00611417 /* WFBTweetDataAnalyzer.h */,
+				5A040004158C0E0D00611417 /* WFBTweetDataAnalyzer.m */,
+				5A040006158C11EB00611417 /* WFBTwitterStreamListener.h */,
+				5AACA1FC1582E23A0012C2E4 /* Supporting Files */,
 			);
 			path = TwitterSynth;
 			sourceTree = "<group>";
@@ -171,6 +178,7 @@
 				5AACA2061582E23A0012C2E4 /* WFBAppDelegate.m in Sources */,
 				5AACA20C1582E23A0012C2E4 /* WFBViewController.m in Sources */,
 				5AACA2141582E7640012C2E4 /* WFBTwitterStream.m in Sources */,
+				5A040005158C0E0D00611417 /* WFBTweetDataAnalyzer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

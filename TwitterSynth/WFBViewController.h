@@ -8,8 +8,9 @@
 
 #import <UIKit/UIKit.h>
 #import "WFBTwitterStream.h"
+#import "WFBTwitterStreamListener.h"
 
-@interface WFBViewController : UIViewController
+@interface WFBViewController : UIViewController <WFBTwitterStreamListener>
 {
     WFBTwitterStream *twitterStream;
 }

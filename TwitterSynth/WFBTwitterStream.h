@@ -7,15 +7,17 @@
 //
 
 #import <Foundation/Foundation.h>
-
+#import "WFBTwitterStreamListener.h"
 @interface WFBTwitterStream : NSObject <NSURLConnectionDelegate>
 {
     NSMutableArray *keywords;
+    id<WFBTwitterStreamListener> listener;
     
 }
 
 @property(nonatomic, retain) NSArray *keywords;
+@property (nonatomic) id<WFBTwitterStreamListener> listener;
 
--(id) initWithKeywords:(NSArray *) keywords;
+-(id) initWithKeywords:(NSArray *) keywords andListener:(id<WFBTwitterStreamListener>)listener_id;
 
 @end
