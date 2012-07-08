@@ -10,14 +10,17 @@
 #import "WFBTwitterStream.h"
 #import "WFBTwitterStreamListener.h"
 #import <CoreLocation/CoreLocation.h>
+#import "WFBSynth.h"
 
 @interface WFBViewController : UIViewController <WFBTwitterStreamListener, CLLocationManagerDelegate>
 {
     WFBTwitterStream *twitterStream;
     WFBTwitterStream *geoTwitterStream;
     CLLocationManager *locationManager;
+    WFBSynth *synth;
 }
 
+@property(nonatomic) WFBSynth *synth;
 @property(nonatomic) WFBTwitterStream *twitterStream;
 @property(nonatomic) WFBTwitterStream *geoTwitterStream;
 @property(nonatomic) CLLocationManager *locationManager;

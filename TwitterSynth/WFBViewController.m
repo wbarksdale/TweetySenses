@@ -13,7 +13,7 @@
     CLLocationDirection heading;
     CLLocation *location;
 }
-
+@synthesize synth;
 @synthesize geoTwitterStream;
 @synthesize locationManager;
 @synthesize twitterStream;
@@ -34,6 +34,8 @@
 	// Do any additional setup after loading the view, typically from a nib.
     // NSArray *keywords = [[NSArray alloc] initWithObjects:@"happy", @"sad", nil];
     // twitterStream = [[WFBTwitterStream alloc] initWithKeywords:keywords andListener:self];
+    self.synth = [[WFBSynth alloc] init];
+    [synth startAUGraph];
     [self trackLocation];
 }
 
@@ -70,6 +72,10 @@
                     text = @"no text";
                 }
                 NSLog(@"coords = %f,%f\n%@\n\n", latitude, longitude, text);
+                
+                //TODO
+                // play a note
+                
             }else{
                 NSLog(@"badtweet");
             }

@@ -111,8 +111,8 @@
     //Point to start of the data and set buffer sizes
     int inLength = [data length];
     int outLength = ((((inLength * 4)/3)/4)*4) + (((inLength * 4)/3)%4 ? 4 : 0);
-    const char *inputBuffer = [data bytes];
-    char *outputBuffer = malloc(outLength);
+    const char *inputBuffer = (const char *) [data bytes];
+    char *outputBuffer = (char *) malloc(outLength);
     outputBuffer[outLength] = 0;
     
     //64 digit code
