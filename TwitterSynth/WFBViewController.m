@@ -42,6 +42,7 @@
 - (void)viewDidUnload
 {
     [super viewDidUnload];
+    [synth stopAUGraph];
     // Release any retained subviews of the main view.
 }
 
@@ -64,26 +65,26 @@
             if(latitude != 0){
                 CLLocation *tweetLoc = [[CLLocation alloc] initWithLatitude:latitude longitude:longitude];
                 CLLocationDistance distance = [location distanceFromLocation:tweetLoc];
-                NSLog(@"distance = %f", distance);
                 double bearing = [self getHeadingForDirectionFromCoordinate:tweetLoc.coordinate toCoordinate:location.coordinate];
-                NSLog(@"bearing = %f", bearing);
                 NSString *text = [tweet objectForKey:@"text"];
                 if(text == nil){
                     text = @"no text";
                 }
-                NSLog(@"coords = %f,%f\n%@\n\n", latitude, longitude, text);
-                
+                NSLog(@"Tweet:\n\
+                      \tlat = %f long = %f\n\
+                      \tdistance = %f\n\
+                      \tbearing  = %f\n\
+                      \ttext     = %@\n", latitude, longitude, distance, bearing,text);
                 //TODO
-                // play a note
-                
+                [synth playSoundWithAzimuth:(bearing - 180.0f) withDistance: (distance)];
             }else{
-                NSLog(@"badtweet");
+                //NSLog(@"badtweet");
             }
         }else{
-            NSLog(@"badtweet");
+            //NSLog(@"badtweet");
         }
     }else{
-        NSLog(@"badtweet");
+        //NSLog(@"badtweet");
     }
 }
 
@@ -109,10 +110,10 @@
 {
     if(geoTwitterStream == nil){
         CLLocationCoordinate2D loc = [newLocation coordinate];
-        CLLocationDegrees northBorder = loc.latitude + 2.0;
-        CLLocationDegrees southBorder = loc.latitude - 2.0;
-        CLLocationDegrees westBorder = loc.longitude - 2.0;
-        CLLocationDegrees eastBorder = loc.longitude + 2.0;
+        CLLocationDegrees northBorder = loc.latitude + 1.7;
+        CLLocationDegrees southBorder = loc.latitude - 1.7;
+        CLLocationDegrees westBorder = loc.longitude - 1.7;
+        CLLocationDegrees eastBorder = loc.longitude + 1.7;
         CLLocationCoordinate2D southWest = CLLocationCoordinate2DMake(southBorder, westBorder);
         CLLocationCoordinate2D northEast = CLLocationCoordinate2DMake(northBorder, eastBorder);
         NSLog(@"latitutde: %f", loc.latitude);
@@ -132,6 +133,8 @@
 - (void)locationManager:(CLLocationManager *)manager didUpdateHeading:(CLHeading *)newHeading
 {
     if(newHeading.trueHeading >0){
+        float dHeading = newHeading.trueHeading - heading;
+        [synth turnByDegrees:dHeading];
         heading = newHeading.trueHeading;
     }
 }

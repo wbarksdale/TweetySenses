@@ -47,8 +47,13 @@ typedef struct {
 @property (getter = isPlaying) BOOL playing;
 @property BOOL interruptedDuringPlayback;
 
-- (void)playSoundWithAzimuth:(float) azimuth withDistance:(float) distance;
+/** Interface for outside classes to fiddle with parameters **/
+- (void) playSoundWithAzimuth:(float) azimuth withDistance:(float) distance;
+- (void) turnByDegrees:(float) dHeading;
 - (void)startAUGraph;
 - (void)stopAUGraph;
+
+- (void)stopRenderForBus:(UInt32) busNumber;
+
 
 @end

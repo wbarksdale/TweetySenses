@@ -10,6 +10,8 @@
 
 #define kNumAudioSources 10
 
+id myself; //reference to self for use in C functions
+
 /*************************************************************
  * Audio session callback function for responding to audio route changes. If playing back audio and
  *   the user unplugs a headset or headphones, or removes the device from a dock connector for hardware  
@@ -80,21 +82,22 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
     AudioSampleType *outSamplesChannel = (AudioSampleType *) ioData->mBuffers[0].mData;
     UInt32 sampleNumber = context->sampleNumber;
     
+    UInt32 bufferPosition = inTimeStamp->mSampleTime;
     // Fill buffers
     for (UInt32 frameNumber = 0; frameNumber < inNumberFrames; ++frameNumber) {
-        if (sampleNumber >= frameTotalForSound || context->shouldPlay){ 
-            *ioActionFlags |= kAudioUnitRenderAction_OutputIsSilence;
+        if (sampleNumber >= frameTotalForSound || !context->shouldPlay){ 
+            //*ioActionFlags |= kAudioUnitRenderAction_OutputIsSilence;
             memset(&ioData, 0, sizeof(ioData));
             context->shouldPlay = false;
             context->sampleNumber = 0;
+            [myself stopRenderForBus:inBusNumber];
             return noErr;
         }
-        
         outSamplesChannel[frameNumber] = data[sampleNumber];
         sampleNumber++;
     }
-
     context->sampleNumber = sampleNumber;
+    //*ioActionFlags &= ~kAudioUnitRenderAction_OutputIsSilence;
     return noErr;
 }
 
@@ -109,6 +112,7 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
 
 - (id) init{
     if(self = [super init]){
+        myself = self;
         [self setupAudioSession];
         [self setupMonoStreamFormat];
         [self setupStereoStreamFormat];
@@ -137,6 +141,16 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
     if (isRunning) {
         result = AUGraphStop(mGraph);
     }
+}
+
+- (void)stopRenderForBus: (UInt32) busNumber{
+    AudioUnitSetParameter(
+                          tdMixerUnit,
+                          k3DMixerParam_Enable,
+                          kAudioUnitScope_Input,
+                          busNumber,
+                          (AudioUnitParameterValue) false,
+                          0);
 }
 
 - (void)readAudioFilesIntoMemory {
@@ -358,7 +372,6 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
     
 //............................................................................
 // Set audio Stream formats
-    
     for (UInt16 i = 0; i < kNumAudioSources; i++) {
         result = AudioUnitSetProperty (
                                        tdMixerUnit,
@@ -383,6 +396,27 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
                                    );
     if (noErr != result) {[self printErrorMessage: @"AudioUnitSetProperty (set mixer unit output stream format)" withStatus: result]; return;}
     
+//...........................................................................
+// Customize 3DMixer properties
+    UInt32 attenCurve = k3DMixerAttenuationCurve_Exponential;
+    UInt32 spatialization = kSpatializationAlgorithm_HRTF;
+    for(UInt32 i = 0; i < kNumAudioSources; i++){
+        AudioUnitSetProperty(
+                         tdMixerUnit, 
+                         kAudioUnitProperty_3DMixerAttenuationCurve, 
+                         kAudioUnitScope_Input, 
+                         i, 
+                         &attenCurve, 
+                         sizeof(attenCurve));
+        AudioUnitSetProperty(
+                          tdMixerUnit,
+                          kAudioUnitProperty_SpatializationAlgorithm,
+                          kAudioUnitScope_Input,
+                          i,
+                          &spatialization,
+                          sizeof(spatialization));
+    }
+    
 //............................................................................
 // Connect the nodes of the audio processing graph
     NSLog (@"Connecting the mixer output to the input of the I/O unit output element");
@@ -398,7 +432,6 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
     
 //............................................................................
 // Initialize audio processing graph
-    
     // Diagnostic code
     // Call CAShow if you want to look at the state of the audio processing 
     //    graph.
@@ -415,7 +448,70 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
 }
 
 - (void)playSoundWithAzimuth:(float) azimuth withDistance:(float) distance{
-    
+    OSStatus result;
+    @synchronized(self){
+        result = AudioUnitSetParameter(tdMixerUnit, 
+                              k3DMixerParam_Azimuth, 
+                              kAudioUnitScope_Input, 
+                              nextAvailableUnit, 
+                              azimuth, 
+                              0);
+        result = AudioUnitSetParameter(
+                              tdMixerUnit,
+                              k3DMixerParam_Distance, 
+                              kAudioUnitScope_Input,
+                              nextAvailableUnit,
+                              (distance  / 200.0f), 
+                                       0);
+        result = AudioUnitSetParameter(
+                                       tdMixerUnit,
+                                       k3DMixerParam_Enable,
+                                       kAudioUnitScope_Input,
+                                       nextAvailableUnit,
+                                       (AudioUnitParameterValue) true,
+                                       0);
+        NSLog(@"Ping: \
+              \ndistance = %f\
+              \nazimuth  = %f\
+              \nchannel  = %d", 
+              (distance / 200.0f), azimuth, nextAvailableUnit);
+        AUGraphUpdate(mGraph, NULL);
+        soundSourceStructs[nextAvailableUnit].sampleNumber = 0;
+        soundSourceStructs[nextAvailableUnit].shouldPlay = true;
+        nextAvailableUnit = ( nextAvailableUnit + 1 )% kNumAudioSources;
+    }
+}
+
+- (void) turnByDegrees:(float) dHeading{
+    for(UInt32 i = 0; i<kNumAudioSources; i++){
+        
+        //Get the current azimuth for the channel
+        AudioUnitParameterValue currentAzimuth;
+        AudioUnitGetParameter(
+                              tdMixerUnit, 
+                              k3DMixerParam_Azimuth, 
+                              kAudioUnitScope_Input, 
+                              i, 
+                              &currentAzimuth);
+        
+        float currentAzimuthFloat = (float) currentAzimuth;
+        float newAzimuth = currentAzimuthFloat + dHeading;
+        if(newAzimuth < -180.0){
+            newAzimuth = newAzimuth + 360.0;
+        }
+        if(newAzimuth > 180.0){
+            newAzimuth = newAzimuth - 360.0;
+        }
+        AudioUnitSetParameter(
+                              tdMixerUnit, 
+                              k3DMixerParam_Azimuth, 
+                              kAudioUnitScope_Input, 
+                              i, 
+                              (AudioUnitParameterValue) newAzimuth, 
+                              0);
+        AUGraphUpdate(mGraph, NULL);
+        
+    }
 }
 
 - (void)setupAudioSession {
@@ -566,24 +662,6 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
 }
 
 - (void) setupMonoStreamFormat {
-    
-    // The AudioUnitSampleType data type is the recommended type for sample data in audio
-    //    units. This obtains the byte size of the type for use in filling in the ASBD.
-    //size_t bytesPerSample = sizeof (AudioSampleType);
-    
-    /*
-    // Fill the application audio format struct's fields to define a linear PCM, 
-    //        stereo, noninterleaved stream at the hardware sample rate.
-    monoStreamFormat.mFormatID          = kAudioFormatLinearPCM;
-    //monoStreamFormat.mFormatFlags       = kAudioFormatFlagsAudioUnitCanonical;
-    monoStreamFormat.mFormatFlags      = kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked;
-    monoStreamFormat.mBytesPerPacket    = bytesPerSample;
-    monoStreamFormat.mFramesPerPacket   = 1;
-    monoStreamFormat.mBytesPerFrame     = bytesPerSample;
-    monoStreamFormat.mChannelsPerFrame  = 1;                  // 1 indicates mono
-    monoStreamFormat.mBitsPerChannel    = 8 * bytesPerSample;
-    monoStreamFormat.mSampleRate        = graphSampleRate;
-    */
     
     monoStreamFormat.mSampleRate = graphSampleRate; // set sample rate
     monoStreamFormat.mFormatID = kAudioFormatLinearPCM;
