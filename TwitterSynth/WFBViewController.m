@@ -28,17 +28,30 @@
     [locationManager startUpdatingHeading];
 }
 
+- (void) stopTrackingLocation{
+    [locationManager stopUpdatingLocation];
+}
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-	// Do any additional setup after loading the view, typically from a nib.
-    // NSArray *keywords = [[NSArray alloc] initWithObjects:@"happy", @"sad", nil];
-    // twitterStream = [[WFBTwitterStream alloc] initWithKeywords:keywords andListener:self];
+    isPlaying = false;
     self.synth = [[WFBSynth alloc] init];
-    [synth startAUGraph];
-    [self trackLocation];
 }
 
+- (void) playButtonPressed:(id)sender{
+    if(isPlaying){
+        //stop playing
+        [playButton setTitle:@"Play" forState:UIControlStateNormal];
+        [synth stopAUGraph];
+        isPlaying = false;
+    }else{
+        [playButton setTitle:@"Stop" forState:UIControlStateNormal];
+        [self trackLocation];
+        [synth startAUGraph];
+        isPlaying = true;
+    }
+}
 - (void)viewDidUnload
 {
     [super viewDidUnload];
@@ -75,8 +88,8 @@
                       \tdistance = %f\n\
                       \tbearing  = %f\n\
                       \ttext     = %@\n", latitude, longitude, distance, bearing,text);
-                //TODO
-                [synth playSoundWithAzimuth:(bearing - 180.0f) withDistance: (distance)];
+                if(isPlaying)
+                    [synth playSoundWithAzimuth:(bearing - 180.0f) withDistance: (distance)];
             }else{
                 //NSLog(@"badtweet");
             }
@@ -137,6 +150,26 @@
         [synth turnByDegrees:dHeading];
         heading = newHeading.trueHeading;
     }
+}
+
+#pragma mark UIPickerViewDataSource methods
+
+- (NSInteger)numberOfComponentsInPickerView:(UIPickerView *)pickerView{
+    return 0;
+}
+
+- (NSInteger)pickerView:(UIPickerView *)pickerView numberOfRowsInComponent:(NSInteger)component{
+    return 0;
+}
+
+#pragma mark UIPickerViewDelegate methods
+
+- (void)pickerView:(UIPickerView *)pickerView didSelectRow:(NSInteger)row inComponent:(NSInteger)component{
+    
+}
+
+- (NSString *)pickerView:(UIPickerView *)pickerView titleForRow:(NSInteger)row forComponent:(NSInteger)component{
+    
 }
 
 @end

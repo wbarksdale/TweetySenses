@@ -12,13 +12,19 @@
 #import <CoreLocation/CoreLocation.h>
 #import "WFBSynth.h"
 
-@interface WFBViewController : UIViewController <WFBTwitterStreamListener, CLLocationManagerDelegate>
+@interface WFBViewController : UIViewController <WFBTwitterStreamListener, 
+            CLLocationManagerDelegate, UIPickerViewDelegate, UIPickerViewDataSource>
 {
     WFBTwitterStream *twitterStream;
     WFBTwitterStream *geoTwitterStream;
     CLLocationManager *locationManager;
     WFBSynth *synth;
+    bool isPlaying;
+    IBOutlet UIPickerView *soundPicker;
+    IBOutlet UIButton *playButton;
 }
+
+- (IBAction)playButtonPressed:(id)sender;
 
 @property(nonatomic) WFBSynth *synth;
 @property(nonatomic) WFBTwitterStream *twitterStream;

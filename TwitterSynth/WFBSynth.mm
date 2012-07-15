@@ -27,16 +27,13 @@ void audioRouteChangeListenerCallback ( void *inUserData, AudioSessionPropertyID
     // This callback, being outside the implementation block, needs a reference to the MixerHostAudio
     //   object, which it receives in the inUserData parameter. You provide this reference when
     //   registering this callback (see the call to AudioSessionAddPropertyListener).
-    WFBSynth *synth = (__bridge WFBSynth *) inUserData;
+    // WFBSynth *synth = (__bridge WFBSynth *) inUserData;
     
     // if application sound is not playing, there's nothing to do, so return.
-    if (NO == synth.isPlaying) {
-        
+    if (NO == [myself isPlaying]) {
         NSLog (@"Audio route change while application audio is stopped.");
         return;
-        
     } else {
-        
         // Determine the specific type of audio route change that occurred.
         CFDictionaryRef routeChangeDictionary = (CFDictionaryRef) inPropertyValue;
         
@@ -47,7 +44,6 @@ void audioRouteChangeListenerCallback ( void *inUserData, AudioSessionPropertyID
                               );
         
         SInt32 routeChangeReason;
-        
         CFNumberGetValue (
                           routeChangeReasonRef,
                           kCFNumberSInt32Type,
@@ -61,7 +57,7 @@ void audioRouteChangeListenerCallback ( void *inUserData, AudioSessionPropertyID
             
             NSLog (@"Audio output device was removed; stopping audio playback.");
             NSString *MixerHostAudioObjectPlaybackStateDidChangeNotification = @"MixerHostAudioObjectPlaybackStateDidChangeNotification";
-            [[NSNotificationCenter defaultCenter] postNotificationName: MixerHostAudioObjectPlaybackStateDidChangeNotification object: synth]; 
+            [[NSNotificationCenter defaultCenter] postNotificationName: MixerHostAudioObjectPlaybackStateDidChangeNotification object: myself]; 
             
         } else {
             
@@ -123,8 +119,10 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
 }
 
 - (void)startAUGraph {
+    
 	// Start the AUGraph
 	OSStatus result = AUGraphStart(mGraph);
+    playing = true; //flag for audio session callback;
 	// Print the result
 	if (result) { 
         printf("AUGraphStart result %d %08X %4.4s\n", (int)result, (int)result, (char*)&result);
@@ -134,12 +132,12 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
 
 - (void)stopAUGraph {
     Boolean isRunning = false;
-    
     // Check to see if the graph is running.
     OSStatus result = AUGraphIsRunning(mGraph, &isRunning);
     // If the graph is running, stop it.
     if (isRunning) {
         result = AUGraphStop(mGraph);
+        playing = false; //flag for audio session callback
     }
 }
 
