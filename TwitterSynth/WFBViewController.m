@@ -18,6 +18,19 @@
 @synthesize locationManager;
 @synthesize twitterStream;
 
+@synthesize playButton;
+@synthesize soundPicker;
+
+
+- (id) initWithCoder:(NSCoder *)aDecoder{
+    if(self = [super initWithCoder:aDecoder]){
+        isPlaying = false;
+        [WFBSoundSourceManager loadSoundSourceList];
+        self.synth = [[WFBSynth alloc] init];
+    }
+    return self;
+}
+
 - (void) trackLocation{
     //get location
     locationManager = [[CLLocationManager alloc] init];
@@ -35,8 +48,6 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    isPlaying = false;
-    self.synth = [[WFBSynth alloc] init];
 }
 
 - (void) playButtonPressed:(id)sender{
@@ -155,21 +166,25 @@
 #pragma mark UIPickerViewDataSource methods
 
 - (NSInteger)numberOfComponentsInPickerView:(UIPickerView *)pickerView{
-    return 0;
+    return 1;
 }
 
 - (NSInteger)pickerView:(UIPickerView *)pickerView numberOfRowsInComponent:(NSInteger)component{
-    return 0;
+    NSArray *sounds = [WFBSoundSourceManager getSounds];
+    return [sounds count];
 }
 
 #pragma mark UIPickerViewDelegate methods
 
 - (void)pickerView:(UIPickerView *)pickerView didSelectRow:(NSInteger)row inComponent:(NSInteger)component{
-    
+    NSArray *sounds = [WFBSoundSourceManager getSounds];
+    NSString *soundUrl = [WFBSoundSourceManager getURLForSound:[sounds objectAtIndex:row]];
+    [synth readAudioFileIntoMemory:soundUrl];
 }
 
 - (NSString *)pickerView:(UIPickerView *)pickerView titleForRow:(NSInteger)row forComponent:(NSInteger)component{
-    
+    NSArray *sounds = [WFBSoundSourceManager getSounds];
+    return [sounds objectAtIndex:row];
 }
 
 @end

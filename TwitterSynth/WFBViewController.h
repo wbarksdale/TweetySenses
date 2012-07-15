@@ -19,6 +19,7 @@
     WFBTwitterStream *geoTwitterStream;
     CLLocationManager *locationManager;
     WFBSynth *synth;
+    
     bool isPlaying;
     IBOutlet UIPickerView *soundPicker;
     IBOutlet UIButton *playButton;
@@ -26,9 +27,12 @@
 
 - (IBAction)playButtonPressed:(id)sender;
 
-@property(nonatomic) WFBSynth *synth;
-@property(nonatomic) WFBTwitterStream *twitterStream;
-@property(nonatomic) WFBTwitterStream *geoTwitterStream;
-@property(nonatomic) CLLocationManager *locationManager;
+@property(nonatomic, strong) IBOutlet UIPickerView *soundPicker;
+@property(nonatomic, strong) IBOutlet UIButton *playButton;
+
+@property(nonatomic, strong) WFBSynth *synth;
+@property(nonatomic, strong) WFBTwitterStream *twitterStream;
+@property(nonatomic, strong) WFBTwitterStream *geoTwitterStream;
+@property(nonatomic, strong) CLLocationManager *locationManager;
 
 @end

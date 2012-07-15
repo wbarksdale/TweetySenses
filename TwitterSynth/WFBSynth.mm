@@ -112,7 +112,7 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
         [self setupAudioSession];
         [self setupMonoStreamFormat];
         [self setupStereoStreamFormat];
-        [self readAudioFilesIntoMemory];
+        [self readAudioFileIntoMemory:[WFBSoundSourceManager defaultSoundUrl]];
         [self initializeAUGraph];
     }
     return self;
@@ -151,9 +151,9 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
                           0);
 }
 
-- (void)readAudioFilesIntoMemory {
+- (void)readAudioFileIntoMemory: (NSString *) fileURL{
     
-    NSURL *pingUrl = [[NSBundle mainBundle] URLForResource:@"dino" withExtension:@"caf"];
+    NSURL *pingUrl = [NSURL URLWithString:fileURL];
     CFURLRef audioFile = (__bridge CFURLRef) pingUrl;
     NSLog (@"readAudioFilesIntoMemory - file: %@", pingUrl);
     

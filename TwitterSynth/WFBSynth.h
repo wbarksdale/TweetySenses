@@ -10,6 +10,7 @@
 #import <AudioToolbox/AudioToolbox.h>
 #import <AVFoundation/AVFoundation.h>
 #import "CAStreamBasicDescription.h"
+#import "WFBSoundSourceManager.h"
 
 typedef struct {
     /** Audio Sample playback state **/
@@ -38,6 +39,8 @@ typedef struct {
     //stuff for audio session
     BOOL playing;
     BOOL interruptedDuringPlayback;
+    
+    WFBSoundSourceManager *soundSourceManager;
 }
 
 @property int nextAvailableUnit;
@@ -50,8 +53,9 @@ typedef struct {
 /** Interface for outside classes to fiddle with parameters **/
 - (void) playSoundWithAzimuth:(float) azimuth withDistance:(float) distance;
 - (void) turnByDegrees:(float) dHeading;
-- (void)startAUGraph;
-- (void)stopAUGraph;
+- (void) startAUGraph;
+- (void) stopAUGraph;
+- (void) readAudioFileIntoMemory: (NSString *)fileURL;
 
 - (void)stopRenderForBus:(UInt32) busNumber;
 
