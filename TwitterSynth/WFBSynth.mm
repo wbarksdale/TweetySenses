@@ -155,7 +155,7 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
 
 - (void)readAudioFilesIntoMemory {
     
-    NSURL *pingUrl = [[NSBundle mainBundle] URLForResource:@"sonar_ping" withExtension:@"caf"];
+    NSURL *pingUrl = [[NSBundle mainBundle] URLForResource:@"dino" withExtension:@"caf"];
     CFURLRef audioFile = (__bridge CFURLRef) pingUrl;
     NSLog (@"readAudioFilesIntoMemory - file: %@", pingUrl);
     

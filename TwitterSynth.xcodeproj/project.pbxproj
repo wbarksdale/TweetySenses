@@ -10,6 +10,9 @@
 		5A040005158C0E0D00611417 /* WFBTweetDataAnalyzer.m in Sources */ = {isa = PBXBuildFile; fileRef = 5A040004158C0E0D00611417 /* WFBTweetDataAnalyzer.m */; };
 		5A040008158CE0EB00611417 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5A040007158CE0EB00611417 /* CoreLocation.framework */; };
 		5A04000F158D2B6900611417 /* WFBSynth.mm in Sources */ = {isa = PBXBuildFile; fileRef = 5A04000E158D2B6900611417 /* WFBSynth.mm */; };
+		5A7099A415B2268A00661D50 /* water_drop.caf in Resources */ = {isa = PBXBuildFile; fileRef = 5A7099A315B2268A00661D50 /* water_drop.caf */; };
+		5A7099A715B229D400661D50 /* dino.caf in Resources */ = {isa = PBXBuildFile; fileRef = 5A7099A615B229D400661D50 /* dino.caf */; };
+		5A7099A915B2485600661D50 /* tweetsounds in Resources */ = {isa = PBXBuildFile; fileRef = 5A7099A815B2485600661D50 /* tweetsounds */; };
 		5AACA1F61582E23A0012C2E4 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5AACA1F51582E23A0012C2E4 /* UIKit.framework */; };
 		5AACA1F81582E23A0012C2E4 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5AACA1F71582E23A0012C2E4 /* Foundation.framework */; };
 		5AACA1FA1582E23A0012C2E4 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5AACA1F91582E23A0012C2E4 /* CoreGraphics.framework */; };
@@ -34,6 +37,9 @@
 		5A04000B158D2B3E00611417 /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = System/Library/Frameworks/OpenAL.framework; sourceTree = SDKROOT; };
 		5A04000D158D2B6900611417 /* WFBSynth.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFBSynth.h; sourceTree = "<group>"; };
 		5A04000E158D2B6900611417 /* WFBSynth.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = WFBSynth.mm; sourceTree = "<group>"; };
+		5A7099A315B2268A00661D50 /* water_drop.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = water_drop.caf; sourceTree = "<group>"; };
+		5A7099A615B229D400661D50 /* dino.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = dino.caf; sourceTree = "<group>"; };
+		5A7099A815B2485600661D50 /* tweetsounds */ = {isa = PBXFileReference; lastKnownFileType = folder; name = tweetsounds; path = ../tweetsounds; sourceTree = "<group>"; };
 		5AACA1F11582E23A0012C2E4 /* TwitterSynth.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TwitterSynth.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5AACA1F51582E23A0012C2E4 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		5AACA1F71582E23A0012C2E4 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -131,6 +137,9 @@
 		5AACA1FC1582E23A0012C2E4 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				5A7099A815B2485600661D50 /* tweetsounds */,
+				5A7099A315B2268A00661D50 /* water_drop.caf */,
+				5A7099A615B229D400661D50 /* dino.caf */,
 				5AAF6C8B15A9F32500E4D6F8 /* sonar_ping.caf */,
 				5AACA1FD1582E23A0012C2E4 /* TwitterSynth-Info.plist */,
 				5AACA1FE1582E23A0012C2E4 /* InfoPlist.strings */,
@@ -210,6 +219,9 @@
 				5AAF6C8F15AA133F00E4D6F8 /* sonar_ping.caf in Resources */,
 				5AACA2001582E23A0012C2E4 /* InfoPlist.strings in Resources */,
 				5AACA2091582E23A0012C2E4 /* MainStoryboard.storyboard in Resources */,
+				5A7099A415B2268A00661D50 /* water_drop.caf in Resources */,
+				5A7099A715B229D400661D50 /* dino.caf in Resources */,
+				5A7099A915B2485600661D50 /* tweetsounds in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

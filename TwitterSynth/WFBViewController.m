@@ -110,10 +110,10 @@
 {
     if(geoTwitterStream == nil){
         CLLocationCoordinate2D loc = [newLocation coordinate];
-        CLLocationDegrees northBorder = loc.latitude + 1.7;
-        CLLocationDegrees southBorder = loc.latitude - 1.7;
-        CLLocationDegrees westBorder = loc.longitude - 1.7;
-        CLLocationDegrees eastBorder = loc.longitude + 1.7;
+        CLLocationDegrees northBorder = loc.latitude + 1.9;
+        CLLocationDegrees southBorder = loc.latitude - 1.9;
+        CLLocationDegrees westBorder = loc.longitude - 1.9;
+        CLLocationDegrees eastBorder = loc.longitude + 1.9;
         CLLocationCoordinate2D southWest = CLLocationCoordinate2DMake(southBorder, westBorder);
         CLLocationCoordinate2D northEast = CLLocationCoordinate2DMake(northBorder, eastBorder);
         NSLog(@"latitutde: %f", loc.latitude);
