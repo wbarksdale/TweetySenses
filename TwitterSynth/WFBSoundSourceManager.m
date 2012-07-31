@@ -28,6 +28,13 @@ static NSArray __strong *soundSourceNames = nil;
     return [baseUrl stringByAppendingPathComponent:[soundSourceNames objectAtIndex:0]];
 }
 
++ (NSString *) bleepSoundUrl{
+    if(!soundSourceNames){
+        [WFBSoundSourceManager loadSoundSourceList];
+    }
+    return [baseUrl stringByAppendingPathComponent:@"bleep.caf"];
+}
+
 + (NSArray *) getSounds{
     if(!soundSourceNames)
         [WFBSoundSourceManager loadSoundSourceList];

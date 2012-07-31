@@ -16,23 +16,32 @@
             CLLocationManagerDelegate, UIPickerViewDelegate, UIPickerViewDataSource>
 {
     WFBTwitterStream *twitterStream;
-    WFBTwitterStream *geoTwitterStream;
     CLLocationManager *locationManager;
     WFBSynth *synth;
     
     bool isPlaying;
+    bool bleepProfanities;
+    
     IBOutlet UIPickerView *soundPicker;
     IBOutlet UIButton *playButton;
+    IBOutlet UILabel *tweetLabel;
 }
 
 - (IBAction)playButtonPressed:(id)sender;
+- (IBAction)bleepProfanitiesChanged:(id)sender;
+
+- (void) stopStream;
+- (void) stopTrackingLocation;
+
+@property(nonatomic) bool isPlaying;
+@property(nonatomic) bool bleepProfanities;
 
 @property(nonatomic, strong) IBOutlet UIPickerView *soundPicker;
 @property(nonatomic, strong) IBOutlet UIButton *playButton;
+@property(nonatomic, strong) IBOutlet UILabel *tweetLabel;
 
 @property(nonatomic, strong) WFBSynth *synth;
 @property(nonatomic, strong) WFBTwitterStream *twitterStream;
-@property(nonatomic, strong) WFBTwitterStream *geoTwitterStream;
 @property(nonatomic, strong) CLLocationManager *locationManager;
 
 @end

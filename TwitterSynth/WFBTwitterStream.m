@@ -14,7 +14,16 @@
 @synthesize listener;
 @synthesize swCorner;
 @synthesize neCorner;
+@synthesize twitterConnection;
+@synthesize streaming;
 
+-(BOOL) streaming{
+    if(self.twitterConnection)
+        return true;
+    return false;
+}
+
+/** currently not used **/
 -(id) initWithKeywords:(NSArray *) keywordsArray andListener:(id<WFBTwitterStreamListener>) listner_id{
     self.listener = listner_id;
     self.keywords = [[NSMutableArray alloc] initWithArray: keywordsArray];
@@ -37,18 +46,11 @@
     return self;
 }
 
--(id) initWithSWCorner:(CLLocationCoordinate2D) southWest NECorner: (CLLocationCoordinate2D) northEast listener:(id<WFBTwitterStreamListener>)listener_id;
+-(id) initWithListener:(id<WFBTwitterStreamListener>)listener_id;
 {
-    self.listener = listener_id;
-    self.swCorner = southWest;
-    self.neCorner = northEast;
-    
-    NSMutableString *geoBoxSpec = [[NSMutableString alloc] initWithString:@"locations="];
-    [geoBoxSpec appendString:[NSString stringWithFormat:@"%f,%f,%f,%f", southWest.longitude, southWest.latitude, northEast.longitude, northEast.latitude]];
-    [geoBoxSpec appendString:@"&stall_warings=true"];
-    NSString *requestBody = [NSString stringWithString:geoBoxSpec];
-    NSLog(@"twitter request body: \n%@\n\n", requestBody);
-    [self sendTwitterStreamingRequestWithBody:requestBody];
+    if(self = [super init]){
+        self.listener = listener_id;
+    }
     return self;
 }
 
@@ -62,10 +64,35 @@
     NSString *authString = [self Base64Encode:[@"whatwillreads:Tao1tao1" dataUsingEncoding:NSUTF8StringEncoding]];
     [request setValue:authString forHTTPHeaderField:@"Authorization"];
     [request setHTTPBody:postData];
-    [NSURLConnection connectionWithRequest:request delegate:self];
+    
+    //wait for twitterConnection to get killed
+    while(self.twitterConnection){
+        [NSThread sleepForTimeInterval:.25]; 
+    }
+    self.twitterConnection = [NSURLConnection connectionWithRequest:request delegate:self];
 }
 
-// NSURLConnection Delegates
+-(void) stopStream{
+    [self.twitterConnection cancel];
+    self.twitterConnection = nil;
+}
+
+-(void) startStreamWithSWCorner:(CLLocationCoordinate2D) southWest NECorner: (CLLocationCoordinate2D) northEast{
+    NSLog(@"\n-------- INITIATING TWITTER STREAM ---------");
+    self.swCorner = southWest;
+    self.neCorner = northEast;
+    
+    NSMutableString *geoBoxSpec = [[NSMutableString alloc] initWithString:@"locations="];
+    [geoBoxSpec appendString:[NSString stringWithFormat:@"%f,%f,%f,%f", southWest.longitude, southWest.latitude, northEast.longitude, northEast.latitude]];
+    [geoBoxSpec appendString:@"&stall_warings=true"];
+    NSString *requestBody = [NSString stringWithString:geoBoxSpec];
+    NSLog(@"twitter request body: \n%@\n\n", requestBody);
+    [self sendTwitterStreamingRequestWithBody:requestBody];
+    NSLog(@"\n-------- TWITTER STREAM INITIATED ---------");
+}
+
+#pragma mark NSURLConnectionDelegate methods
+
 - (void)connection:(NSURLConnection *)connection didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge {
     if ([challenge previousFailureCount] == 0) {
         NSLog(@"received authentication challenge");
@@ -83,7 +110,7 @@
 
 - (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response {
     NSHTTPURLResponse *resp = (NSHTTPURLResponse *) response;
-    NSLog(@"got a response: \n\n %d \n\n", [resp statusCode]);
+    NSLog(@"\n\tresponse: %d\n\t%@", [resp statusCode], [resp allHeaderFields]);
     
 }
 
@@ -100,11 +127,13 @@
 }
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection {
+    //self.twitterConnection = nil;
     NSLog(@"connection loaded");
 }
 
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error {
-    NSLog(@"connection failed");
+    self.twitterConnection = nil;
+    NSLog(@"connection failed with error:\n %@", error);
 }
 
 -(NSString *)Base64Encode:(NSData *)data{

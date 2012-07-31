@@ -8,23 +8,30 @@
 
 #import "WFBViewController.h"
 
+#define kBOUNDING_BOX_SIZE 333000
+//111,000m in 1 degree
+
 @implementation WFBViewController{
     int nilCount;
     CLLocationDirection heading;
     CLLocation *location;
 }
+
 @synthesize synth;
-@synthesize geoTwitterStream;
-@synthesize locationManager;
 @synthesize twitterStream;
+@synthesize locationManager;
+
+@synthesize isPlaying;
+@synthesize bleepProfanities;
 
 @synthesize playButton;
 @synthesize soundPicker;
-
+@synthesize tweetLabel;
 
 - (id) initWithCoder:(NSCoder *)aDecoder{
     if(self = [super initWithCoder:aDecoder]){
-        isPlaying = false;
+        self.isPlaying = false;
+        self.bleepProfanities = true;
         [WFBSoundSourceManager loadSoundSourceList];
         self.synth = [[WFBSynth alloc] init];
     }
@@ -50,23 +57,37 @@
     [super viewDidLoad];
 }
 
-- (void) playButtonPressed:(id)sender{
-    if(isPlaying){
+- (void)stopStream{
+    [twitterStream stopStream];
+}
+
+- (IBAction)playButtonPressed:(id)sender{
+    if(self.isPlaying){
         //stop playing
         [playButton setTitle:@"Play" forState:UIControlStateNormal];
+        [twitterStream stopStream];
+        [self stopTrackingLocation];
         [synth stopAUGraph];
-        isPlaying = false;
+        self.isPlaying = false;
     }else{
         [playButton setTitle:@"Stop" forState:UIControlStateNormal];
         [self trackLocation];
         [synth startAUGraph];
-        isPlaying = true;
+        self.isPlaying = true;
     }
 }
+
+- (IBAction)bleepProfanitiesChanged:(id)sender{
+    UISwitch *bleepSwitch = (UISwitch *) sender;
+    self.bleepProfanities = bleepSwitch.isOn;
+    NSLog(@"bleepProfanities = %@", self.bleepProfanities ? @"true" : @"false");
+}
+
 - (void)viewDidUnload
 {
     [super viewDidUnload];
     [synth stopAUGraph];
+    [twitterStream stopStream];
     // Release any retained subviews of the main view.
 }
 
@@ -75,7 +96,23 @@
     return (interfaceOrientation != UIInterfaceOrientationPortraitUpsideDown);
 }
 
-// tweet stream delegates
+/**
+ * UTILITY
+ * returns the bearing between the two points. 0 = north, 90 = east, 180 = south, 270 = east
+ */
+- (double) getHeadingForDirectionFromCoordinate:(CLLocationCoordinate2D)fromLoc toCoordinate:(CLLocationCoordinate2D)toLoc
+{
+    double fLat = fromLoc.latitude * (M_PI/180.0);
+    double fLng = fromLoc.longitude  * (M_PI/180.0);
+    double tLat = toLoc.latitude  * (M_PI/180.0);
+    double tLng = toLoc.longitude  * (M_PI/180.0);
+    
+    double headRadians = atan2(sin(tLng-fLng)*cos(tLat), cos(fLat)*sin(tLat)-sin(fLat)*cos(tLat)*cos(tLng-fLng));
+    
+    return headRadians * (180.0/M_PI) + 180.0;
+}
+
+#pragma mark TweetStreamDelegate methods
 
 - (void) receiveTweet:(NSDictionary *) tweet{
     //calculate distance
@@ -94,13 +131,33 @@
                 if(text == nil){
                     text = @"no text";
                 }
-                NSLog(@"Tweet:\n\
-                      \tlat = %f long = %f\n\
-                      \tdistance = %f\n\
-                      \tbearing  = %f\n\
-                      \ttext     = %@\n", latitude, longitude, distance, bearing,text);
-                if(isPlaying)
-                    [synth playSoundWithAzimuth:(bearing - 180.0f) withDistance: (distance)];
+                NSLog(@"\n\tTweet:\
+                      \n\tlat = %f long = %f\
+                      \n\tdistance = %f\
+                      \n\tbearing  = %f\
+                      \n\ttext     = %@", latitude, longitude, distance, bearing,text);
+                [self.tweetLabel setText:text];
+                if(self.isPlaying){
+                    double maxDistance = sqrt( (double) (2.0 * kBOUNDING_BOX_SIZE * kBOUNDING_BOX_SIZE) );
+                    
+                    NSString *sound = @"default";
+                    float playbackRate = 1.0;
+                    
+                    //Profanities code
+                    int numProfanities = [self countProfanities:[tweet objectForKey:@"text"]];
+                    if(numProfanities > 0 && self.bleepProfanities){
+                        playbackRate = 1 - (.1 * numProfanities);
+                        if(playbackRate <= 0){
+                            playbackRate = .1;
+                        }
+                        sound = @"bleep";
+                    }
+                        
+                    [synth playSound:sound
+                         withAzimuth:(bearing - 180.0f)
+                        withDistance:(float) ((distance / maxDistance) * 1000)
+                     withPitchChange:playbackRate];
+                }
             }else{
                 //NSLog(@"badtweet");
             }
@@ -112,39 +169,60 @@
     }
 }
 
+static NSArray *profanities = [NSArray arrayWithObjects:
+                               @"fuck", 
+                               @"bitch",
+                               @"cunt",
+                               @"suck",
+                               @"balls",
+                               @"shit",
+                               @"fucker",
+                               @"trick",
+                               @"ho", 
+                               @"ass", 
+                               @"niggas",
+                               @"nigga",
+                               nil];
+
+- (int) countProfanities: (NSString *)text{
+    int count = 0;
+    NSArray *words = [text componentsSeparatedByString:@" "];
+    for(NSString *word in words){
+        for(NSString *profanity in profanities){
+            if([word isEqualToString:profanity]){
+                count++;
+            }
+        }
+    }
+    return count;
+}
+
 - (void) laggingStream: (NSString *) message{
     NSLog(@"warning message: \n%@\n\n", message);
 }
 
-// returns the bearing between the two points. 0 = north, 90 = east, 180 = south, 270 = east
-- (double) getHeadingForDirectionFromCoordinate:(CLLocationCoordinate2D)fromLoc toCoordinate:(CLLocationCoordinate2D)toLoc
-{
-    double fLat = fromLoc.latitude * (M_PI/180.0);
-    double fLng = fromLoc.longitude  * (M_PI/180.0);
-    double tLat = toLoc.latitude  * (M_PI/180.0);
-    double tLng = toLoc.longitude  * (M_PI/180.0);
-    
-    double headRadians = atan2(sin(tLng-fLng)*cos(tLat), cos(fLat)*sin(tLat)-sin(fLat)*cos(tLat)*cos(tLng-fLng));
-    
-    return headRadians * (180.0/M_PI) + 180.0;
-}
 
-//CLLocation delegates
+#pragma mark LocationDelegate methods
+
 - (void)locationManager:(CLLocationManager *)manager didUpdateToLocation:(CLLocation *)newLocation fromLocation:(CLLocation *)oldLocation
 {
-    if(geoTwitterStream == nil){
+    if(!twitterStream){
+        self.twitterStream = [[WFBTwitterStream alloc] initWithListener:self];
+    }
+    if(!twitterStream.streaming){
         CLLocationCoordinate2D loc = [newLocation coordinate];
-        CLLocationDegrees northBorder = loc.latitude + 1.9;
-        CLLocationDegrees southBorder = loc.latitude - 1.9;
-        CLLocationDegrees westBorder = loc.longitude - 1.9;
-        CLLocationDegrees eastBorder = loc.longitude + 1.9;
+        NSLog(@"bouding box is %f degrees", kBOUNDING_BOX_SIZE/111000.0);
+        CLLocationDegrees northBorder = loc.latitude + kBOUNDING_BOX_SIZE / 111000;
+        CLLocationDegrees southBorder = loc.latitude - kBOUNDING_BOX_SIZE / 111000;
+        CLLocationDegrees westBorder = loc.longitude - kBOUNDING_BOX_SIZE / 111000;
+        CLLocationDegrees eastBorder = loc.longitude + kBOUNDING_BOX_SIZE / 111000;
         CLLocationCoordinate2D southWest = CLLocationCoordinate2DMake(southBorder, westBorder);
         CLLocationCoordinate2D northEast = CLLocationCoordinate2DMake(northBorder, eastBorder);
         NSLog(@"latitutde: %f", loc.latitude);
         NSLog(@"longitutde: %f\n", loc.longitude);
         
         //this should call should be somewhere else
-        geoTwitterStream = [[WFBTwitterStream alloc] initWithSWCorner:southWest NECorner:northEast listener:self];
+        [twitterStream startStreamWithSWCorner:southWest NECorner:northEast];
     }
     location = newLocation;
 }

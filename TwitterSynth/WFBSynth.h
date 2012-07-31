@@ -27,7 +27,11 @@ typedef struct {
     //Audio Graph Members
     AUGraph mGraph;             // The AU Graph
     AudioUnit tdMixerUnit;      // The 3D mixer
-    soundStruct soundSourceStructs[10];
+    
+    int bleepOutBus;            //the bus that will play the bleep
+    soundStruct bleepOutStruct;       //plays when tweet contains profanities
+    
+    soundStruct soundSourceStructs[10]; //normal tweet sound
     int nextAvailableUnit;              //keeps track of the next bus to render audio
     
     //Audio Stream Descriptions
@@ -39,7 +43,6 @@ typedef struct {
     //stuff for audio session
     BOOL playing;
     BOOL interruptedDuringPlayback;
-    
     WFBSoundSourceManager *soundSourceManager;
 }
 
@@ -52,6 +55,9 @@ typedef struct {
 
 /** Interface for outside classes to fiddle with parameters **/
 - (void) playSoundWithAzimuth:(float) azimuth withDistance:(float) distance;
+- (void) playSoundWithAzimuth:(float)azimuth withDistance:(float)distance withPitchChange:(float)pitch;
+- (void) playSound:(NSString *) sound withAzimuth:(float) azimuth withDistance: (float)distance withPitchChange:(float)pitch;
+
 - (void) turnByDegrees:(float) dHeading;
 - (void) startAUGraph;
 - (void) stopAUGraph;
@@ -59,5 +65,10 @@ typedef struct {
 
 - (void)stopRenderForBus:(UInt32) busNumber;
 
+/** make the compiler happy **/
+- (void) setupAudioSession;
+- (void) setupMonoStreamFormat;
+- (void) setupStereoStreamFormat;
+- (void) printErrorMessage: (NSString *) errorString withStatus: (OSStatus) result;
 
 @end

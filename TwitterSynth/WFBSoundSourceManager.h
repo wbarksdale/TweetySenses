@@ -16,5 +16,6 @@
 + (NSArray *) getSounds;
 + (NSString *) getURLForSound: (NSString *) soundName;
 + (NSString *) defaultSoundUrl;
++ (NSString *) bleepSoundUrl;
 
 @end
