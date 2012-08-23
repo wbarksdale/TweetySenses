@@ -8,8 +8,14 @@
 
 #import "WFBViewController.h"
 
-#define kBOUNDING_BOX_SIZE 333000
+#define kBOUNDING_BOX_SIZE 222000
 //111,000m in 1 degree
+
+#define MIN_PLAYBACK_RATE .25
+#define MAX_PLAYBACK_RATE 1.75
+
+#define MIN_FOLLOWER_COUNT 20
+#define MAX_FOLLOWER_COUNT 3000
 
 @implementation WFBViewController{
     int nilCount;
@@ -115,12 +121,14 @@
 #pragma mark TweetStreamDelegate methods
 
 - (void) receiveTweet:(NSDictionary *) tweet{
-    //calculate distance
+    //NSLog(@"%@", tweet);
+    
     NSDictionary *coordinatesDict = [tweet objectForKey:@"coordinates"];
-    NSNull *nullObj = [NSNull null];
-    if(![coordinatesDict isEqual: nullObj]){
+    if(![coordinatesDict isEqual: [NSNull null]]){
         NSArray *coordinatesArray = [coordinatesDict objectForKey:@"coordinates"];
-        if(![coordinatesArray isEqual:nullObj]){
+        if(![coordinatesArray isEqual:[NSNull null]]){
+            
+            //At this point the tweet certainly has location
             double longitude = [[coordinatesArray objectAtIndex:0] doubleValue];
             double latitude = [[coordinatesArray objectAtIndex:1] doubleValue];
             if(latitude != 0){
@@ -131,28 +139,42 @@
                 if(text == nil){
                     text = @"no text";
                 }
-                NSLog(@"\n\tTweet:\
+                DLog(@"\n\tTweet:\
                       \n\tlat = %f long = %f\
                       \n\tdistance = %f\
                       \n\tbearing  = %f\
                       \n\ttext     = %@", latitude, longitude, distance, bearing,text);
                 [self.tweetLabel setText:text];
+                
+                //play some sound
                 if(self.isPlaying){
                     double maxDistance = sqrt( (double) (2.0 * kBOUNDING_BOX_SIZE * kBOUNDING_BOX_SIZE) );
                     
+                    //figure out what sound should play
                     NSString *sound = @"default";
-                    float playbackRate = 1.0;
-                    
-                    //Profanities code
                     int numProfanities = [self countProfanities:[tweet objectForKey:@"text"]];
                     if(numProfanities > 0 && self.bleepProfanities){
-                        playbackRate = 1 - (.1 * numProfanities);
-                        if(playbackRate <= 0){
-                            playbackRate = .1;
-                        }
                         sound = @"bleep";
                     }
-                        
+                    
+                    //figure out the playback rate to use based on retweet_count
+                    float playbackRate = MAX_PLAYBACK_RATE;
+                    NSDictionary *user = [tweet objectForKey:@"user"];
+                    if(![user isEqual:[NSNull null]]){
+                        int followersCount = [[user objectForKey:@"followers_count"] intValue];
+                        DLog(@"followersCount: %d", followersCount);
+                        if(followersCount < MIN_FOLLOWER_COUNT) playbackRate = MIN_PLAYBACK_RATE;
+                        if(followersCount > MAX_FOLLOWER_COUNT) playbackRate = MAX_PLAYBACK_RATE;
+                        if(followersCount >= MIN_FOLLOWER_COUNT && followersCount <= MAX_FOLLOWER_COUNT){
+                            //compute playback rate from follower count
+                            double rise = MIN_PLAYBACK_RATE - MAX_PLAYBACK_RATE;
+                            double run = MAX_FOLLOWER_COUNT - MIN_FOLLOWER_COUNT;
+                            double slope = rise/run;
+                            double intercept = MIN_PLAYBACK_RATE - MAX_FOLLOWER_COUNT * slope;
+                            playbackRate = followersCount * slope + intercept;
+                        }
+                    }
+                    
                     [synth playSound:sound
                          withAzimuth:(bearing - 180.0f)
                         withDistance:(float) ((distance / maxDistance) * 1000)
@@ -168,6 +190,7 @@
         //NSLog(@"badtweet");
     }
 }
+
 
 static NSArray *profanities = [NSArray arrayWithObjects:
                                @"fuck", 

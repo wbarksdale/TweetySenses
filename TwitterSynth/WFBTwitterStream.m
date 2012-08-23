@@ -65,6 +65,7 @@
     [request setValue:authString forHTTPHeaderField:@"Authorization"];
     [request setHTTPBody:postData];
     
+    NSLog(@"request:\n%@", [request HTTPBody]);
     //wait for twitterConnection to get killed
     while(self.twitterConnection){
         [NSThread sleepForTimeInterval:.25]; 

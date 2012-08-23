@@ -551,7 +551,7 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
                              &dataSize);
         
         distanceParams.mMaxDistance = (Float32) 1500.0;
-        distanceParams.mMaxAttenuation = (Float32) 40.0;
+        distanceParams.mMaxAttenuation = (Float32) 60.0;
         distanceParams.mReferenceDistance = (Float32) 1.0;
         
         AudioUnitSetProperty(
