@@ -24,7 +24,9 @@
     CLLocationCoordinate2D neCorner;
 }
 
-@property(nonatomic) BOOL streaming;
+@property(nonatomic, readonly) BOOL streaming;
+@property(nonatomic, readonly) BOOL streamInitiated;
+
 @property(strong) NSURLConnection *twitterConnection;
 @property(nonatomic) CLLocationCoordinate2D swCorner;
 @property(nonatomic) CLLocationCoordinate2D neCorner;

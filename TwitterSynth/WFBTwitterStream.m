@@ -10,10 +10,6 @@
 
 @interface WFBTwitterStream()
 
-@property(readonly) NSString* twitterUsername;
-@property(readonly) NSString* twitterPassword;
-@property(readonly) NSString* nonce;
-
 @end
 
 @implementation WFBTwitterStream
@@ -24,19 +20,7 @@
 @synthesize neCorner;
 @synthesize twitterConnection;
 @synthesize streaming;
-@synthesize twitterPassword;
-@synthesize twitterUsername;
-
--(NSString *) nonce{
-    NSString *alphabet  = @"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXZY0123456789";
-    NSMutableString *s = [NSMutableString stringWithCapacity:20];
-    for (NSUInteger i = 0U; i < 32; i++) {
-        u_int32_t r = arc4random() % [alphabet length];
-        unichar c = [alphabet characterAtIndex:r];
-        [s appendFormat:@"%C", c];
-    }
-    return [s copy];
-}
+@synthesize streamInitiated;
 
 -(BOOL) streaming{
     if(self.twitterConnection)
@@ -52,23 +36,33 @@
     return self;
 }
 
-//percent encode values?
-#define OAUTH_FORMAT_STRING @"OAuth oauth_consumer_key=\"%@\", oauth_nonce=\"%@\", oauth_signature=\"%@\", oauth_signature_method=\"%@\", oauth_timestamp=\"%@\", oauth_token=\"%@\", oauth_version=\"%@\""
-
-#define kConsumerKey    @"aTJtrm0GNlb2Fw1IZ8WA"
-#define kNonce          @"blahblahblah"
-#define kSignature  
-
 -(void) stopStream{
     [self.twitterConnection cancel];
     self.twitterConnection = nil;
 }
-          
+   
+//-(void) sendTwitterStreamingRequestWithBody:(NSString *) body{
+//    //set up the request
+//    NSData* postData = [body dataUsingEncoding:NSUTF8StringEncoding];
+//    NSURL *url = [NSURL URLWithString:@"https://stream.twitter.com/1/statuses/filter.json"];
+//    NSMutableURLRequest *request= [[NSMutableURLRequest alloc] initWithURL:url];
+//    [request setHTTPMethod:@"POST"];
+//    NSString *authString = NSString stringWithFormat:OAUTH_FORMAT_STRING,
+//    [request setValue:authString forHTTPHeaderField:@"Authorization"];
+//    [request setHTTPBody:postData];
+//    NSLog(@"request:\n%@", [request HTTPBody]);
+//    //wait for twitterConnection to get killed
+//    while(self.twitterConnection){
+//        [NSThread sleepForTimeInterval:.25];
+//    }
+//    self.twitterConnection = [NSURLConnection connectionWithRequest:request delegate:self];
+//}
+
+
 -(void) startStreamWithSWCorner:(CLLocationCoordinate2D) southWest NECorner: (CLLocationCoordinate2D) northEast{
     NSLog(@"\n-------- INITIATING TWITTER STREAM ---------");
     self.swCorner = southWest;
     self.neCorner = northEast;
-    
     NSString *location = [NSString stringWithFormat:@"%f,%f,%f,%f", southWest.longitude, southWest.latitude, northEast.longitude, northEast.latitude];
     //[[NSMutableString alloc] initWithString:@"locations="];
     //[geoBoxSpec appendString:@"&stall_warings=true"];
@@ -76,10 +70,10 @@
     
     //  First, we need to obtain the account instance for the user's Twitter account
     ACAccountStore *store = [[ACAccountStore alloc] init];
-    ACAccountType *twitterAccountType =
-    [store accountTypeWithAccountTypeIdentifier:ACAccountTypeIdentifierTwitter];
+    ACAccountType *twitterAccountType = [store accountTypeWithAccountTypeIdentifier:ACAccountTypeIdentifierTwitter];
     
     //  Request permission from the user to access the available Twitter accounts
+    WFBTwitterStream __block *tweetyStream = self;
     [store requestAccessToAccountsWithType:twitterAccountType
                      withCompletionHandler:^(BOOL granted, NSError *error) {
                          if (!granted) {
@@ -88,32 +82,36 @@
                          }
                          else {
                              // Grab the available accounts
-                             NSArray *twitterAccounts =
-                             [store accountsWithAccountType:twitterAccountType];
+                             NSArray *twitterAccounts = [store accountsWithAccountType:twitterAccountType];
                              
                              if ([twitterAccounts count] > 0) {
                                  // Use the first account for simplicity
-                                 ACAccount *account = [twitterAccounts objectAtIndex:0];
-                                 
+                                 ACAccount *account = [twitterAccounts objectAtIndex:2];
+                                 NSLog(@"Account: %@\n", account.accountDescription)
                                  // Now make an authenticated request to our endpoint
                                  NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
                                  [params setObject:@"1" forKey:@"include_entities"];
-                                 
+                                 [params setObject:location forKey:@"locations"];
+                                 [params setObject:@"true" forKey:@"stall_warnings"];
                                  //  The endpoint that we wish to call
-                                 NSURL *url =
-                                 [NSURL
-                                  URLWithString:@"http://api.twitter.com/1/statuses/home_timeline.json"];
+                                 NSURL *url = [NSURL URLWithString:@"https://stream.twitter.com/1.1/statuses/filter.json"];
                                  
                                  //  Build the request with our parameter
-                                 TWRequest *request =
-                                 [[TWRequest alloc] initWithURL:url
-                                                     parameters:params
-                                                  requestMethod:TWRequestMethodGET];
+                                 TWRequest *request = [[TWRequest alloc] initWithURL:url
+                                                                          parameters:params
+                                                                       requestMethod:TWRequestMethodPOST];
                                  
                                  // Attach the account object to this request
                                  [request setAccount:account];
+                                 NSURLRequest *signedReq = request.signedURLRequest;
+                                 NSLog(@"signed req %@",signedReq.description);
+                                 NSLog(@"HEADER: %@",   signedReq.allHTTPHeaderFields);
+                                 NSLog(@"BODY  : %@", [[NSString alloc] initWithData:signedReq.HTTPBody encoding:NSUTF8StringEncoding]);
+                                 tweetyStream.twitterConnection = [[NSURLConnection alloc] initWithRequest:signedReq delegate:tweetyStream startImmediately: NO];
                                  
-                                 request.signedURLRequest
+                                 [tweetyStream.twitterConnection scheduleInRunLoop:[NSRunLoop mainRunLoop]
+                                                       forMode:NSDefaultRunLoopMode];
+                                 [tweetyStream.twitterConnection start];
                                  
                              } // if ([twitterAccounts count] > 0)
                          } // if (granted) 
@@ -128,12 +126,6 @@
     NSLog(@"AUTH FAILED, SOMETHING IS WRONG");
     if ([challenge previousFailureCount] == 0) {
         NSLog(@"received authentication challenge");
-        NSURLCredential *newCredential = [NSURLCredential credentialWithUser:self.twitterUsername
-                                                                    password:self.twitterPassword
-                                                                 persistence:NSURLCredentialPersistenceForSession];
-        NSLog(@"credential created");
-        [[challenge sender] useCredential:newCredential forAuthenticationChallenge:challenge];
-        NSLog(@"responded to authentication challenge");    
     }
     else {
         NSLog(@"previous authentication failure");
@@ -141,13 +133,12 @@
 }
 
 - (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response {
+    NSLog(@"got reponse");
     NSHTTPURLResponse *resp = (NSHTTPURLResponse *) response;
     NSLog(@"\n\tresponse: %d\n\t%@", [resp statusCode], [resp allHeaderFields]);
-    
 }
 
 - (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data {
-    //pul
     //NSLog(@"got some data: \n\n %@ \n\n", [data description]);
     NSError *error;
     NSDictionary *jsonDictionary = [NSJSONSerialization JSONObjectWithData:data options:NSJSONWritingPrettyPrinted error:&error];
@@ -159,7 +150,6 @@
 }
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection {
-    //self.twitterConnection = nil;
     NSLog(@"connection loaded");
 }
 
@@ -233,24 +223,6 @@
     NSString *pictemp = [NSString stringWithUTF8String:outputBuffer];
     free(outputBuffer); 
     return pictemp;
-}
-
-#pragma mark private property getters
-
--(NSString *) twitterUsername{
-    NSLog(@"getting username");
-    NSData *data = [WFBKeychainWrapper load:@"username"];
-    if(data == nil) return (NSString *)data;
-    return [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-}
-
--(NSString *) twitterPassword{
-    NSLog(@"getting password");
-    NSData *data = [WFBKeychainWrapper load:@"password"];
-    if(data == nil){
-        return (NSString *)data;
-    }
-    return [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
 }
 
 @end

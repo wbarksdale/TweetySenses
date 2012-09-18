@@ -19,6 +19,12 @@
 #define MIN_FOLLOWER_COUNT 20
 #define MAX_FOLLOWER_COUNT 3000
 
+@interface WFBViewController()
+
+-(void) startTwitterStream;
+
+@end
+
 @implementation WFBViewController{
     int nilCount;
     CLLocationDirection heading;
@@ -93,15 +99,35 @@
     if(self.isPlaying){
         //stop playing
         [playButton setTitle:@"Play" forState:UIControlStateNormal];
-        [twitterStream stopStream];
+        self.twitterStream = nil;
         [self stopTrackingLocation];
         [synth stopAUGraph];
         self.isPlaying = false;
     }else{
         [playButton setTitle:@"Stop" forState:UIControlStateNormal];
-        [self trackLocation];
+        [self trackLocation]; // need to use GCD here
+        self.twitterStream = [[WFBTwitterStream alloc] initWithListener:self];
+        [self startTwitterStream];
         [synth startAUGraph];
         self.isPlaying = true;
+    }
+}
+
+-(void) startTwitterStream {
+    if(location != nil){
+        CLLocationCoordinate2D loc = [location coordinate];
+        NSLog(@"bouding box is %f degrees", kBOUNDING_BOX_SIZE/111000.0);
+        CLLocationDegrees northBorder = loc.latitude + kBOUNDING_BOX_SIZE / 111000;
+        CLLocationDegrees southBorder = loc.latitude - kBOUNDING_BOX_SIZE / 111000;
+        CLLocationDegrees westBorder = loc.longitude - kBOUNDING_BOX_SIZE / 111000;
+        CLLocationDegrees eastBorder = loc.longitude + kBOUNDING_BOX_SIZE / 111000;
+        CLLocationCoordinate2D southWest = CLLocationCoordinate2DMake(southBorder, westBorder);
+        CLLocationCoordinate2D northEast = CLLocationCoordinate2DMake(northBorder, eastBorder);
+        NSLog(@"latitutde: %f", loc.latitude);
+        NSLog(@"longitutde: %f\n", loc.longitude);
+        [twitterStream startStreamWithSWCorner:southWest NECorner:northEast];
+    }else{
+        NSLog(@"could not get location");
     }
 }
 
@@ -280,24 +306,6 @@ static NSArray *profanities = [NSArray arrayWithObjects:
 
 - (void)locationManager:(CLLocationManager *)manager didUpdateToLocation:(CLLocation *)newLocation fromLocation:(CLLocation *)oldLocation
 {
-    if(!twitterStream){
-        self.twitterStream = [[WFBTwitterStream alloc] initWithListener:self];
-    }
-    if(!twitterStream.streaming){
-        CLLocationCoordinate2D loc = [newLocation coordinate];
-        NSLog(@"bouding box is %f degrees", kBOUNDING_BOX_SIZE/111000.0);
-        CLLocationDegrees northBorder = loc.latitude + kBOUNDING_BOX_SIZE / 111000;
-        CLLocationDegrees southBorder = loc.latitude - kBOUNDING_BOX_SIZE / 111000;
-        CLLocationDegrees westBorder = loc.longitude - kBOUNDING_BOX_SIZE / 111000;
-        CLLocationDegrees eastBorder = loc.longitude + kBOUNDING_BOX_SIZE / 111000;
-        CLLocationCoordinate2D southWest = CLLocationCoordinate2DMake(southBorder, westBorder);
-        CLLocationCoordinate2D northEast = CLLocationCoordinate2DMake(northBorder, eastBorder);
-        NSLog(@"latitutde: %f", loc.latitude);
-        NSLog(@"longitutde: %f\n", loc.longitude);
-        
-        //this should call should be somewhere else
-        [twitterStream startStreamWithSWCorner:southWest NECorner:northEast];
-    }
     location = newLocation;
 }
 
