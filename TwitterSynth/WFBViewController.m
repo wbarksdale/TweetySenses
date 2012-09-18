@@ -7,6 +7,8 @@
 //
 
 #import "WFBViewController.h"
+#import "WFBLoginViewController.h"
+#import "WFBKeychainWrapper.h"
 
 #define kBOUNDING_BOX_SIZE 222000
 //111,000m in 1 degree
@@ -58,9 +60,29 @@
     [locationManager stopUpdatingLocation];
 }
 
-- (void)viewDidLoad
+- (void) viewDidLoad
 {
     [super viewDidLoad];
+}
+
+- (void)viewDidAppear:(BOOL)animated{
+    id username = [WFBKeychainWrapper load:@"username"];
+    if(username == nil){
+        NSLog(@"no username");
+        UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"MainStoryboard" bundle:nil];
+        WFBLoginViewController *loginController = (WFBLoginViewController *)[storyboard instantiateViewControllerWithIdentifier:@"LoginViewController"];
+        loginController.modalPresentationStyle = UIModalPresentationFullScreen;
+        [self presentViewController:loginController animated:YES completion:^(void){NSLog(@"completed")}];
+    }
+}
+
+- (IBAction)login:(id)sender{
+    [WFBKeychainWrapper delete:@"username"];
+    [WFBKeychainWrapper delete:@"password"];
+    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"MainStoryboard" bundle:nil];
+    WFBLoginViewController *loginController = (WFBLoginViewController *)[storyboard instantiateViewControllerWithIdentifier:@"LoginViewController"];
+    loginController.modalPresentationStyle = UIModalPresentationFullScreen;
+    [self presentViewController:loginController animated:YES completion:^(void){NSLog(@"completed")}];
 }
 
 - (void)stopStream{
@@ -88,6 +110,37 @@
     self.bleepProfanities = bleepSwitch.isOn;
     NSLog(@"bleepProfanities = %@", self.bleepProfanities ? @"true" : @"false");
 }
+
+#define TEST_DISTANCE true
+#define TEST_AZIMUTH true
+- (IBAction)runSynthTests:(id)sender{
+    [synth startAUGraph];
+    
+    if(TEST_DISTANCE){
+        for(float i = 1.0; i < 20; i = i * 2){
+            DLog(@"testing distance: %f", i)
+            [synth playSound:@"default"
+                 withAzimuth:0.0f
+                withDistance:i
+             withPitchChange:1.0f];
+            [NSThread sleepForTimeInterval:.75];
+        }
+    }
+    
+    if(TEST_AZIMUTH){
+        for(int i = -18; i <= 18; i += 3){
+            DLog(@"testing azimuth: %d", i * 10)
+            [synth playSound:@"default"
+                 withAzimuth:i * 10.0f
+                withDistance:500.0f
+             withPitchChange:1.0f];
+            [NSThread sleepForTimeInterval:.75];
+        }
+    }
+    
+    [synth stopAUGraph];
+}
+
 
 - (void)viewDidUnload
 {
@@ -156,8 +209,8 @@
                     if(numProfanities > 0 && self.bleepProfanities){
                         sound = @"bleep";
                     }
-                    
-                    //figure out the playback rate to use based on retweet_count
+
+                    //figure out the playback rate to use based on followers_count
                     float playbackRate = MAX_PLAYBACK_RATE;
                     NSDictionary *user = [tweet objectForKey:@"user"];
                     if(![user isEqual:[NSNull null]]){
@@ -174,10 +227,9 @@
                             playbackRate = followersCount * slope + intercept;
                         }
                     }
-                    
                     [synth playSound:sound
                          withAzimuth:(bearing - 180.0f)
-                        withDistance:(float) ((distance / maxDistance) * 1000)
+                        withDistance:(float) ((distance / maxDistance) * 20 + 1)
                      withPitchChange:playbackRate];
                 }
             }else{
@@ -191,6 +243,9 @@
     }
 }
 
+- (void) laggingStream: (NSString *) message{
+    NSLog(@"warning message: \n%@\n\n", message);
+}
 
 static NSArray *profanities = [NSArray arrayWithObjects:
                                @"fuck", 
@@ -218,10 +273,6 @@ static NSArray *profanities = [NSArray arrayWithObjects:
         }
     }
     return count;
-}
-
-- (void) laggingStream: (NSString *) message{
-    NSLog(@"warning message: \n%@\n\n", message);
 }
 
 

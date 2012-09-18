@@ -10,6 +10,10 @@
 
 #define kNumAudioSources 10
 
+#define MAX_ATTENUATION_DISTANCE 100.0
+
+#define REVERB false
+
 id myself; //reference to self for use in C functions
 
 /*************************************************************
@@ -530,58 +534,69 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
     
 //...........................................................................
 // Customize 3DMixer properties
-    UInt32 attenCurve = k3DMixerAttenuationCurve_Linear;
+    
+    if(false){
+        UInt32        reverbSetting    = 1; // turn it on;
+        result = AudioUnitSetProperty(tdMixerUnit,
+                                      kAudioUnitProperty_UsesInternalReverb,
+                                      kAudioUnitScope_Global,
+                                      0,
+                                      &reverbSetting,
+                                      sizeof(reverbSetting));
+        if (noErr != result) {[self printErrorMessage: @"AudioUnitSetProperty" withStatus: result]; return;}
+    }
+    
+    UInt32 attenCurve = k3DMixerAttenuationCurve_Exponential;
     UInt32 spatialization = kSpatializationAlgorithm_HRTF;
     MixerDistanceParams distanceParams;
     UInt32 dataSize = sizeof(distanceParams);
     
-    //PICK UP HERE, distance Params are kindof working...
-    
     //bleep sound included in this.
     for(UInt32 i = 0; i < kNumAudioSources + 1; i++){
         
-        
-        
-        AudioUnitGetProperty(
-                             tdMixerUnit, 
-                             kAudioUnitProperty_3DMixerDistanceParams, 
-                             kAudioUnitScope_Input, 
-                             i, 
-                             &distanceParams, 
-                             &dataSize);
-        
-        distanceParams.mMaxDistance = (Float32) 1500.0;
+        distanceParams.mMaxDistance = (Float32) 1000.0;
         distanceParams.mMaxAttenuation = (Float32) 60.0;
         distanceParams.mReferenceDistance = (Float32) 1.0;
         
-        AudioUnitSetProperty(
-                             tdMixerUnit, 
-                             kAudioUnitProperty_3DMixerDistanceParams, 
-                             kAudioUnitScope_Input, 
-                             i, 
-                             &distanceParams, 
+        result = AudioUnitSetProperty(
+                             tdMixerUnit,
+                             kAudioUnitProperty_3DMixerDistanceParams,
+                             kAudioUnitScope_Input,
+                             i,
+                             &distanceParams,
                              sizeof(distanceParams));
+        if (noErr != result) {[self printErrorMessage: @"AudioUnitSetProperty" withStatus: result]; return;}
+        result = AudioUnitSetProperty(
+                             tdMixerUnit,
+                             kAudioUnitProperty_3DMixerAttenuationCurve,
+                             kAudioUnitScope_Input,
+                             i,
+                             &attenCurve,
+                             sizeof(attenCurve));
+         
+        if (noErr != result) {[self printErrorMessage: @"AudioUnitSetProperty" withStatus: result]; return;}
+        result = AudioUnitSetProperty(
+                             tdMixerUnit,
+                             kAudioUnitProperty_SpatializationAlgorithm,
+                             kAudioUnitScope_Input,
+                             i,
+                             &spatialization,
+                             sizeof(spatialization));
+        if (noErr != result) {[self printErrorMessage: @"AudioUnitSetProperty" withStatus: result]; return;}
+        result = AudioUnitGetProperty(
+                             tdMixerUnit,
+                             kAudioUnitProperty_3DMixerDistanceParams,
+                             kAudioUnitScope_Input,
+                             i,
+                             &distanceParams,
+                             &dataSize);
+        if (noErr != result) {[self printErrorMessage: @"AudioUnitGetProperty" withStatus: result]; return;}
         
-        NSLog(@"\n\tMixerDistanceParams {\
-              \n\tmMaxDistance       : %f\
-              \n\tmMaxAttenuation    : %f\
-              \n\tmReferenceDistance : %f",
-              distanceParams.mMaxDistance, distanceParams.mMaxAttenuation, distanceParams.mReferenceDistance);
-        
-        AudioUnitSetProperty(
-                         tdMixerUnit, 
-                         kAudioUnitProperty_3DMixerAttenuationCurve, 
-                         kAudioUnitScope_Input, 
-                         i, 
-                         &attenCurve, 
-                         sizeof(attenCurve));
-        AudioUnitSetProperty(
-                          tdMixerUnit,
-                          kAudioUnitProperty_SpatializationAlgorithm,
-                          kAudioUnitScope_Input,
-                          i,
-                          &spatialization,
-                          sizeof(spatialization));
+        ILog(@"\n\tMixerDistanceParams {\
+             \n\tmMaxDistance       : %f\
+             \n\tmMaxAttenuation    : %f\
+             \n\tmReferenceDistance : %f",
+             distanceParams.mMaxDistance, distanceParams.mMaxAttenuation, distanceParams.mReferenceDistance);
         
     }
     
@@ -615,8 +630,14 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
     self.nextAvailableUnit = 0; //this is basically a pointer to the next unit to use
 }
 
+
+
 - (void)playSoundWithAzimuth:(float) azimuth withDistance:(float) distance{
     OSStatus result;
+    
+    //clamp the attenuation
+    distance = distance > MAX_ATTENUATION_DISTANCE ? MAX_ATTENUATION_DISTANCE : distance;
+    
     @synchronized(self){
         result = AudioUnitSetParameter(tdMixerUnit, 
                               k3DMixerParam_Azimuth, 
@@ -638,7 +659,7 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
                                        nextAvailableUnit,
                                        (AudioUnitParameterValue) true,
                                        0);
-        NSLog(@"\n\tPing: \
+       DLog(@"\n\tPing: \
               \n\tdistance = %f\
               \n\tazimuth  = %f\
               \n\tchannel  = %d", 
@@ -653,6 +674,8 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
 //pitchChange .5 = half speed, pitchChange 2.0 = double speed
 - (void)playSoundWithAzimuth:(float)azimuth withDistance:(float)distance withPitchChange:(float)pitch{
     OSStatus result;
+    //clamp the attenuation
+    distance = distance > MAX_ATTENUATION_DISTANCE ? MAX_ATTENUATION_DISTANCE : distance;
     @synchronized(self){
         result = AudioUnitSetParameter(tdMixerUnit, 
                                        k3DMixerParam_Azimuth, 
@@ -683,7 +706,7 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
                                        (AudioUnitParameterValue) pitch, 
                                        0);
         
-        NSLog(@"\n\tPing: \
+       DLog(@"\n\tPing: \
               \n\tdistance = %f\
               \n\tazimuth  = %f\
               \n\tD pich   = %f\
@@ -698,8 +721,10 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
 
 - (void) playSound:(NSString *) sound withAzimuth:(float) azimuth withDistance: (float)distance withPitchChange:(float)pitch{
     
+    //clamp the attenuation
+    distance = distance > MAX_ATTENUATION_DISTANCE ? MAX_ATTENUATION_DISTANCE : distance;
+    
     if([sound isEqualToString:@"bleep"]){
-        NSLog(@"bleep");
         OSStatus result;
         @synchronized(self){
             result = AudioUnitSetParameter(tdMixerUnit,
@@ -731,7 +756,7 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
                                            (AudioUnitParameterValue) pitch,
                                            0);
             
-            NSLog(@"\n\tPing: \
+            DLog(@"\n\tPing: \
                   \n\tdistance = %f\
                   \n\tazimuth  = %f\
                   \n\tD pich   = %f\
@@ -745,13 +770,11 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
     }
     
     if([sound isEqualToString:@"default"]){
-        NSLog(@"tweet");
         [self playSoundWithAzimuth:azimuth withDistance:distance withPitchChange:pitch];
         return;
     }
     
     NSLog(@"attempted to play unknown sound \a");
-        
 }
 
 - (void) turnByDegrees:(float) dHeading{
@@ -904,7 +927,7 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
     bcopy (&swappedResult, resultString, 4);
     resultString[4] = '\0';
     
-    NSLog (
+    DLog (
            @"*** %@ error: %d %08X %4.4s\n",
            errorString,
            (char*) &resultString
@@ -947,6 +970,32 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
     NSLog (@"The mono stream format");
     [self printASBD: monoStreamFormat];
     
+}
+
+NSString * binaryStringFromInteger( UInt32 number )
+{
+    NSMutableString * string = [[NSMutableString alloc] init];
+    
+    int spacing = pow( 2, 3 );
+    int width = ( sizeof( number ) ) * spacing;
+    int binaryDigit = 0;
+    int integer = number;
+    
+    while( binaryDigit < width )
+    {
+        binaryDigit++;
+        
+        [string insertString:( (integer & 1) ? @"1" : @"0" ) atIndex:0];
+        
+        if( binaryDigit % spacing == 0 && binaryDigit != width )
+        {
+            [string insertString:@" " atIndex:0];
+        }
+        
+        integer = integer >> 1;
+    }
+    
+    return string;
 }
 
 - (void) printASBD: (AudioStreamBasicDescription) asbd {

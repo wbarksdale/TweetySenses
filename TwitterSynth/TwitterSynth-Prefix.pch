@@ -12,17 +12,18 @@
     #import <UIKit/UIKit.h>
     #import <Foundation/Foundation.h>
 
+    #define ILog(FORMAT, ...) printf("[info] %s\n", [[NSString stringWithFormat:FORMAT, ##__VA_ARGS__] UTF8String]);
+    
     //---------------------- DEBUG MACROS ------------------
     #ifdef DEBUG
-    #   define DLog(fmt, ...) NSLog((@"%s [Line %d] " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__);
-    #else
-    #   define DLog(...)
-    #endif
-    #define ALog(fmt, ...) NSLog((@"%s [Line %d] " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__);
-    #ifdef DEBUG
+    #   define NSLog(FORMAT, ...) printf("%s\n", [[NSString stringWithFormat:FORMAT, ##__VA_ARGS__] UTF8String]);
+    #   define DLog(fmt, ...) NSLog((@"[debug] %s [Line %d] " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__);
     #   define ULog(fmt, ...)  { UIAlertView *alert = [[UIAlertView alloc] initWithTitle:[NSString stringWithFormat:@"%s\n [Line %d] ", __PRETTY_FUNCTION__, __LINE__] message:[NSString stringWithFormat:fmt, ##__VA_ARGS__]  delegate:nil cancelButtonTitle:@"Ok" otherButtonTitles:nil]; [alert show]; }
     #else
+    #   define DLog(...)
     #   define ULog(...)
     #endif
+
+    #define ALog(fmt, ...) NSLog((@"%s [Line %d] " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__);
     //---------------------- END DEBUG MACROS ------------------
 #endif

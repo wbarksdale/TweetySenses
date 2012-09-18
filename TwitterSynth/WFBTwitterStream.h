@@ -8,8 +8,10 @@
 
 #import <Foundation/Foundation.h>
 #import <CoreLocation/CoreLocation.h>
-
+#import "WFBKeychainWrapper.h"
+#import <Twitter/Twitter.h>
 #import "WFBTwitterStreamListener.h"
+
 @interface WFBTwitterStream : NSObject <NSURLConnectionDelegate>
 {
     NSMutableArray *keywords;

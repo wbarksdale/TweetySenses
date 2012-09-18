@@ -12,7 +12,7 @@
 #import <CoreLocation/CoreLocation.h>
 #import "WFBSynth.h"
 
-@interface WFBViewController : UIViewController <WFBTwitterStreamListener, 
+@interface WFBViewController : UIViewController <WFBTwitterStreamListener,
             CLLocationManagerDelegate, UIPickerViewDelegate, UIPickerViewDataSource>
 {
     WFBTwitterStream *twitterStream;
@@ -29,6 +29,8 @@
 
 - (IBAction)playButtonPressed:(id)sender;
 - (IBAction)bleepProfanitiesChanged:(id)sender;
+- (IBAction)runSynthTests:(id)sender;
+- (IBAction)login:(id)sender;
 
 - (void) stopStream;
 - (void) stopTrackingLocation;

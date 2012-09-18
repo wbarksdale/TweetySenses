@@ -12,6 +12,8 @@
 		5A04000F158D2B6900611417 /* WFBSynth.mm in Sources */ = {isa = PBXBuildFile; fileRef = 5A04000E158D2B6900611417 /* WFBSynth.mm */; };
 		5A7099A915B2485600661D50 /* tweetsounds in Resources */ = {isa = PBXBuildFile; fileRef = 5A7099A815B2485600661D50 /* tweetsounds */; };
 		5A7099AE15B261E500661D50 /* WFBSoundSourceManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 5A7099AD15B261E500661D50 /* WFBSoundSourceManager.m */; };
+		5A86C34B1607EBDF0088F308 /* WFBLoginViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5A86C34A1607EBDF0088F308 /* WFBLoginViewController.m */; };
+		5A86C34E1607F7AA0088F308 /* Twitter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5A86C34D1607F7AA0088F308 /* Twitter.framework */; };
 		5AACA1F61582E23A0012C2E4 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5AACA1F51582E23A0012C2E4 /* UIKit.framework */; };
 		5AACA1F81582E23A0012C2E4 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5AACA1F71582E23A0012C2E4 /* Foundation.framework */; };
 		5AACA1FA1582E23A0012C2E4 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5AACA1F91582E23A0012C2E4 /* CoreGraphics.framework */; };
@@ -24,6 +26,8 @@
 		5AAF6C8E15A9FCAA00E4D6F8 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5AAF6C8D15A9FCAA00E4D6F8 /* AVFoundation.framework */; };
 		5ADDE6B615A2407F005ACB48 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5ADDE6B515A2407F005ACB48 /* AudioToolbox.framework */; };
 		5ADDE6B815A2447D005ACB48 /* CAStreamBasicDescription.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5ADDE6B715A2447D005ACB48 /* CAStreamBasicDescription.cpp */; };
+		5ADFFD991602508C00BE40AD /* WFBKeychainWrapper.m in Sources */ = {isa = PBXBuildFile; fileRef = 5ADFFD981602508C00BE40AD /* WFBKeychainWrapper.m */; };
+		5ADFFD9C1602590400BE40AD /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5ADFFD9B1602590400BE40AD /* Security.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -38,6 +42,9 @@
 		5A7099A815B2485600661D50 /* tweetsounds */ = {isa = PBXFileReference; lastKnownFileType = folder; name = tweetsounds; path = ../tweetsounds; sourceTree = "<group>"; };
 		5A7099AA15B251F200661D50 /* WFBSoundSourceManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFBSoundSourceManager.h; sourceTree = "<group>"; };
 		5A7099AD15B261E500661D50 /* WFBSoundSourceManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFBSoundSourceManager.m; sourceTree = "<group>"; };
+		5A86C3491607EBDF0088F308 /* WFBLoginViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFBLoginViewController.h; sourceTree = "<group>"; };
+		5A86C34A1607EBDF0088F308 /* WFBLoginViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFBLoginViewController.m; sourceTree = "<group>"; };
+		5A86C34D1607F7AA0088F308 /* Twitter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Twitter.framework; path = System/Library/Frameworks/Twitter.framework; sourceTree = SDKROOT; };
 		5AACA1F11582E23A0012C2E4 /* TwitterSynth.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TwitterSynth.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5AACA1F51582E23A0012C2E4 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		5AACA1F71582E23A0012C2E4 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -61,6 +68,9 @@
 		5ADDE6BC15A24578005ACB48 /* CADebugPrintf.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CADebugPrintf.h; sourceTree = "<group>"; };
 		5ADDE6BD15A2461B005ACB48 /* CAXException.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CAXException.h; sourceTree = "<group>"; };
 		5ADDE6BE15A24622005ACB48 /* CAMath.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CAMath.h; sourceTree = "<group>"; };
+		5ADFFD971602508C00BE40AD /* WFBKeychainWrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFBKeychainWrapper.h; sourceTree = "<group>"; };
+		5ADFFD981602508C00BE40AD /* WFBKeychainWrapper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFBKeychainWrapper.m; sourceTree = "<group>"; };
+		5ADFFD9B1602590400BE40AD /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -68,6 +78,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5A86C34E1607F7AA0088F308 /* Twitter.framework in Frameworks */,
+				5ADFFD9C1602590400BE40AD /* Security.framework in Frameworks */,
 				5AAF6C8E15A9FCAA00E4D6F8 /* AVFoundation.framework in Frameworks */,
 				5ADDE6B615A2407F005ACB48 /* AudioToolbox.framework in Frameworks */,
 				5A040008158CE0EB00611417 /* CoreLocation.framework in Frameworks */,
@@ -100,6 +112,8 @@
 		5AACA1F41582E23A0012C2E4 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				5A86C34D1607F7AA0088F308 /* Twitter.framework */,
+				5ADFFD9B1602590400BE40AD /* Security.framework */,
 				5AAF6C8D15A9FCAA00E4D6F8 /* AVFoundation.framework */,
 				5ADDE6B515A2407F005ACB48 /* AudioToolbox.framework */,
 				5A04000B158D2B3E00611417 /* OpenAL.framework */,
@@ -123,11 +137,15 @@
 				5AACA2071582E23A0012C2E4 /* MainStoryboard.storyboard */,
 				5AACA20A1582E23A0012C2E4 /* WFBViewController.h */,
 				5AACA20B1582E23A0012C2E4 /* WFBViewController.m */,
+				5A86C3491607EBDF0088F308 /* WFBLoginViewController.h */,
+				5A86C34A1607EBDF0088F308 /* WFBLoginViewController.m */,
 				5AACA2121582E7640012C2E4 /* WFBTwitterStream.h */,
 				5AACA2131582E7640012C2E4 /* WFBTwitterStream.m */,
 				5A040003158C0E0D00611417 /* WFBTweetDataAnalyzer.h */,
 				5A040004158C0E0D00611417 /* WFBTweetDataAnalyzer.m */,
 				5A040006158C11EB00611417 /* WFBTwitterStreamListener.h */,
+				5ADFFD971602508C00BE40AD /* WFBKeychainWrapper.h */,
+				5ADFFD981602508C00BE40AD /* WFBKeychainWrapper.m */,
 				5AACA1FC1582E23A0012C2E4 /* Supporting Files */,
 			);
 			path = TwitterSynth;
@@ -233,6 +251,8 @@
 				5A040005158C0E0D00611417 /* WFBTweetDataAnalyzer.m in Sources */,
 				5A04000F158D2B6900611417 /* WFBSynth.mm in Sources */,
 				5A7099AE15B261E500661D50 /* WFBSoundSourceManager.m in Sources */,
+				5ADFFD991602508C00BE40AD /* WFBKeychainWrapper.m in Sources */,
+				5A86C34B1607EBDF0088F308 /* WFBLoginViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
