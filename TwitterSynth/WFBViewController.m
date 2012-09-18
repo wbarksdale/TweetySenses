@@ -7,8 +7,6 @@
 //
 
 #import "WFBViewController.h"
-#import "WFBLoginViewController.h"
-#import "WFBKeychainWrapper.h"
 
 #define kBOUNDING_BOX_SIZE 222000
 //111,000m in 1 degree
@@ -71,26 +69,6 @@
     [super viewDidLoad];
 }
 
-//- (void)viewDidAppear:(BOOL)animated{
-//    id username = [WFBKeychainWrapper load:@"username"];
-//    if(username == nil){
-//        NSLog(@"no username");
-//        UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"MainStoryboard" bundle:nil];
-//        WFBLoginViewController *loginController = (WFBLoginViewController *)[storyboard instantiateViewControllerWithIdentifier:@"LoginViewController"];
-//        loginController.modalPresentationStyle = UIModalPresentationFullScreen;
-//        [self presentViewController:loginController animated:YES completion:^(void){NSLog(@"completed")}];
-//    }
-//}
-
-- (IBAction)login:(id)sender{
-    [WFBKeychainWrapper delete:@"username"];
-    [WFBKeychainWrapper delete:@"password"];
-    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"MainStoryboard" bundle:nil];
-    WFBLoginViewController *loginController = (WFBLoginViewController *)[storyboard instantiateViewControllerWithIdentifier:@"LoginViewController"];
-    loginController.modalPresentationStyle = UIModalPresentationFullScreen;
-    [self presentViewController:loginController animated:YES completion:^(void){NSLog(@"completed")}];
-}
-
 - (void)stopStream{
     [twitterStream stopStream];
 }
@@ -99,21 +77,25 @@
     if(self.isPlaying){
         //stop playing
         [playButton setTitle:@"Play" forState:UIControlStateNormal];
-        self.twitterStream = nil;
+        [self stopTwitterStream];
         [self stopTrackingLocation];
         [synth stopAUGraph];
         self.isPlaying = false;
     }else{
         [playButton setTitle:@"Stop" forState:UIControlStateNormal];
-        [self trackLocation]; // need to use GCD here
-        self.twitterStream = [[WFBTwitterStream alloc] initWithListener:self];
-        [self startTwitterStream];
+        [self trackLocation]; //twitter stream gets started on first location update
         [synth startAUGraph];
         self.isPlaying = true;
     }
 }
 
+-(void) stopTwitterStream {
+    self.twitterStream.twitterConnection = nil;
+    self.twitterStream = nil;
+}
+
 -(void) startTwitterStream {
+    self.twitterStream = [[WFBTwitterStream alloc] initWithListener:self];
     if(location != nil){
         CLLocationCoordinate2D loc = [location coordinate];
         NSLog(@"bouding box is %f degrees", kBOUNDING_BOX_SIZE/111000.0);
@@ -201,7 +183,6 @@
 
 - (void) receiveTweet:(NSDictionary *) tweet{
     //NSLog(@"%@", tweet);
-    
     NSDictionary *coordinatesDict = [tweet objectForKey:@"coordinates"];
     if(![coordinatesDict isEqual: [NSNull null]]){
         NSArray *coordinatesArray = [coordinatesDict objectForKey:@"coordinates"];
@@ -307,6 +288,11 @@ static NSArray *profanities = [NSArray arrayWithObjects:
 - (void)locationManager:(CLLocationManager *)manager didUpdateToLocation:(CLLocation *)newLocation fromLocation:(CLLocation *)oldLocation
 {
     location = newLocation;
+    @synchronized(self){
+        if(!self.twitterStream){
+            [self startTwitterStream];
+        }
+    }
 }
 
 - (void)locationManager:(CLLocationManager *)manager didFailWithError:(NSError *)error

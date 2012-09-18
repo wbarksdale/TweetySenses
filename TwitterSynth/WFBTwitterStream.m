@@ -40,23 +40,6 @@
     [self.twitterConnection cancel];
     self.twitterConnection = nil;
 }
-   
-//-(void) sendTwitterStreamingRequestWithBody:(NSString *) body{
-//    //set up the request
-//    NSData* postData = [body dataUsingEncoding:NSUTF8StringEncoding];
-//    NSURL *url = [NSURL URLWithString:@"https://stream.twitter.com/1/statuses/filter.json"];
-//    NSMutableURLRequest *request= [[NSMutableURLRequest alloc] initWithURL:url];
-//    [request setHTTPMethod:@"POST"];
-//    NSString *authString = NSString stringWithFormat:OAUTH_FORMAT_STRING,
-//    [request setValue:authString forHTTPHeaderField:@"Authorization"];
-//    [request setHTTPBody:postData];
-//    NSLog(@"request:\n%@", [request HTTPBody]);
-//    //wait for twitterConnection to get killed
-//    while(self.twitterConnection){
-//        [NSThread sleepForTimeInterval:.25];
-//    }
-//    self.twitterConnection = [NSURLConnection connectionWithRequest:request delegate:self];
-//}
 
 
 -(void) startStreamWithSWCorner:(CLLocationCoordinate2D) southWest NECorner: (CLLocationCoordinate2D) northEast{
@@ -64,16 +47,12 @@
     self.swCorner = southWest;
     self.neCorner = northEast;
     NSString *location = [NSString stringWithFormat:@"%f,%f,%f,%f", southWest.longitude, southWest.latitude, northEast.longitude, northEast.latitude];
-    //[[NSMutableString alloc] initWithString:@"locations="];
-    //[geoBoxSpec appendString:@"&stall_warings=true"];
-    //NSString *requestBody = [NSString stringWithString:geoBoxSpec];
     
     //  First, we need to obtain the account instance for the user's Twitter account
     ACAccountStore *store = [[ACAccountStore alloc] init];
     ACAccountType *twitterAccountType = [store accountTypeWithAccountTypeIdentifier:ACAccountTypeIdentifierTwitter];
     
     //  Request permission from the user to access the available Twitter accounts
-    WFBTwitterStream __block *tweetyStream = self;
     [store requestAccessToAccountsWithType:twitterAccountType
                      withCompletionHandler:^(BOOL granted, NSError *error) {
                          if (!granted) {
@@ -83,16 +62,16 @@
                          else {
                              // Grab the available accounts
                              NSArray *twitterAccounts = [store accountsWithAccountType:twitterAccountType];
-                             
                              if ([twitterAccounts count] > 0) {
                                  // Use the first account for simplicity
-                                 ACAccount *account = [twitterAccounts objectAtIndex:2];
-                                 NSLog(@"Account: %@\n", account.accountDescription)
-                                 // Now make an authenticated request to our endpoint
+                                 ACAccount *account = [twitterAccounts objectAtIndex:0];
                                  NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
                                  [params setObject:@"1" forKey:@"include_entities"];
                                  [params setObject:location forKey:@"locations"];
                                  [params setObject:@"true" forKey:@"stall_warnings"];
+                                 //set any other criteria to track
+                                 //params setObject:@"words, to track" forKey@"track"];
+                                 
                                  //  The endpoint that we wish to call
                                  NSURL *url = [NSURL URLWithString:@"https://stream.twitter.com/1.1/statuses/filter.json"];
                                  
@@ -104,14 +83,12 @@
                                  // Attach the account object to this request
                                  [request setAccount:account];
                                  NSURLRequest *signedReq = request.signedURLRequest;
-                                 NSLog(@"signed req %@",signedReq.description);
-                                 NSLog(@"HEADER: %@",   signedReq.allHTTPHeaderFields);
-                                 NSLog(@"BODY  : %@", [[NSString alloc] initWithData:signedReq.HTTPBody encoding:NSUTF8StringEncoding]);
-                                 tweetyStream.twitterConnection = [[NSURLConnection alloc] initWithRequest:signedReq delegate:tweetyStream startImmediately: NO];
                                  
-                                 [tweetyStream.twitterConnection scheduleInRunLoop:[NSRunLoop mainRunLoop]
+                                 // make the connection, ensuring that it is made on the main runloop
+                                 self.twitterConnection = [[NSURLConnection alloc] initWithRequest:signedReq delegate:self startImmediately: NO];
+                                 [self.twitterConnection scheduleInRunLoop:[NSRunLoop mainRunLoop]
                                                        forMode:NSDefaultRunLoopMode];
-                                 [tweetyStream.twitterConnection start];
+                                 [self.twitterConnection start];
                                  
                              } // if ([twitterAccounts count] > 0)
                          } // if (granted) 
@@ -139,14 +116,18 @@
 }
 
 - (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data {
-    //NSLog(@"got some data: \n\n %@ \n\n", [data description]);
     NSError *error;
-    NSDictionary *jsonDictionary = [NSJSONSerialization JSONObjectWithData:data options:NSJSONWritingPrettyPrinted error:&error];
-    NSDictionary *warning = [jsonDictionary objectForKey:@"warning"];
-    if(warning){
-        [listener laggingStream:[warning objectForKey:@"message"]];
+    NSString *response = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+    NSArray *tweetStrings = [response componentsSeparatedByString:@"\r\n"];
+    NSLog(@"tweets received : %d", tweetStrings.count);
+    for(NSString *tweet in tweetStrings){
+        NSDictionary *jsonDictionary = [NSJSONSerialization JSONObjectWithData: [tweet dataUsingEncoding:NSUTF8StringEncoding] options:NSJSONWritingPrettyPrinted error:&error];
+        NSDictionary *warning = [jsonDictionary objectForKey:@"warning"];
+        if(warning){
+            [listener laggingStream:[warning objectForKey:@"message"]];
+        }
+        [listener receiveTweet:jsonDictionary];
     }
-    [listener receiveTweet:jsonDictionary];
 }
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection {

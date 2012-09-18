@@ -8,7 +8,6 @@
 
 #import "WFBAppDelegate.h"
 #import "WFBViewController.h"
-#import "WFBKeychainWrapper.h"
 
 @implementation WFBAppDelegate
 

@@ -8,7 +8,6 @@
 
 #import <Foundation/Foundation.h>
 #import <CoreLocation/CoreLocation.h>
-#import "WFBKeychainWrapper.h"
 #import <Twitter/Twitter.h>
 #import "WFBTwitterStreamListener.h"
 #import <Accounts/Accounts.h>

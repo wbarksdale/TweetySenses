@@ -30,7 +30,6 @@
 - (IBAction)playButtonPressed:(id)sender;
 - (IBAction)bleepProfanitiesChanged:(id)sender;
 - (IBAction)runSynthTests:(id)sender;
-- (IBAction)login:(id)sender;
 
 - (void) stopStream;
 - (void) stopTrackingLocation;
