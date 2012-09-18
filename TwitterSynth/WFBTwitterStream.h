@@ -11,6 +11,7 @@
 #import "WFBKeychainWrapper.h"
 #import <Twitter/Twitter.h>
 #import "WFBTwitterStreamListener.h"
+#import <Accounts/Accounts.h>
 
 @interface WFBTwitterStream : NSObject <NSURLConnectionDelegate>
 {
@@ -29,7 +30,7 @@
 @property(nonatomic) CLLocationCoordinate2D neCorner;
 
 @property(nonatomic, retain) NSArray *keywords;
-@property (nonatomic) id<WFBTwitterStreamListener> listener;
+@property(nonatomic) id<WFBTwitterStreamListener> listener;
 
 -(id) initWithKeywords:(NSArray *) keywords andListener:(id<WFBTwitterStreamListener>)listener_id;
 -(id) initWithListener:(id<WFBTwitterStreamListener>)listener_id;

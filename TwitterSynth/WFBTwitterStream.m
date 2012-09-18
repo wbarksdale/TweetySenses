@@ -52,77 +52,12 @@
     return self;
 }
 
-//POST /1/statuses/update.json?include_entities=true HTTP/1.1
-//Accept: */*
-//          Connection: close
-//          User-Agent: OAuth gem v0.4.4
-//          Content-Type: application/x-www-form-urlencoded
-//          Authorization:
-//          OAuth oauth_consumer_key="xvz1evFS4wEEPTGEFPHBog",
-//          oauth_nonce="kYjzVBB8Y0ZFabxSWbWovY3uYSQ2pTgmZeNu2VS4cg",
-//          oauth_signature="tnnArxj06cWHq44gCs1OSKk%2FjLY%3D",
-//          oauth_signature_method="HMAC-SHA1",
-//          oauth_timestamp="1318622958",
-//          oauth_token="370773112-GmHxMAgYyLbNEtIKZeRNFsMKPR9EyMZeS9weJAEb",
-//          oauth_version="1.0"
-//          Content-Length: 76
-//          Host: api.twitter.com
-//
-//          status=Hello%20Ladies%20%2b%20Gentlemen%2c%20a%20signed%20OAuth%20request%21
-
-
-//oauth
-
 //percent encode values?
 #define OAUTH_FORMAT_STRING @"OAuth oauth_consumer_key=\"%@\", oauth_nonce=\"%@\", oauth_signature=\"%@\", oauth_signature_method=\"%@\", oauth_timestamp=\"%@\", oauth_token=\"%@\", oauth_version=\"%@\""
 
 #define kConsumerKey    @"aTJtrm0GNlb2Fw1IZ8WA"
 #define kNonce          @"blahblahblah"
 #define kSignature  
-
-
-
--(void) sendTwitterStreamingRequestWithBody:(NSString *) body{
-    //set up the request
-    NSData* postData = [body dataUsingEncoding:NSUTF8StringEncoding];
-    NSURL *url = [NSURL URLWithString:@"https://stream.twitter.com/1/statuses/filter.json"];
-    NSMutableURLRequest *request= [[NSMutableURLRequest alloc] initWithURL:url];
-    [request setHTTPMethod:@"POST"];
-    NSString *authString = NSString stringWithFormat:OAUTH_FORMAT_STRING, 
-    [request setValue:authString forHTTPHeaderField:@"Authorization"];
-    [request setHTTPBody:postData];
-    NSLog(@"request:\n%@", [request HTTPBody]);
-    //wait for twitterConnection to get killed
-    while(self.twitterConnection){
-        [NSThread sleepForTimeInterval:.25];
-    }
-    self.twitterConnection = [NSURLConnection connectionWithRequest:request delegate:self];
-}
-
-//Authorization: OAuth oauth_consumer_key="aTJtrm0GNlb2Fw1IZ8WA", oauth_nonce="b7493ca1a07270ef1162260a671e6a58", oauth_signature="utzEgmEmsnijZ9sEfgMDhyUKK3g%3D", oauth_signature_method="HMAC-SHA1", oauth_timestamp="1347933466", oauth_token="sillytoken", oauth_version="1.0"
-
-////basic auth
-//-(void) sendTwitterStreamingRequestWithBody:(NSString *) body{
-//    //set up the request
-//    NSData* postData = [body dataUsingEncoding:NSUTF8StringEncoding];
-//    NSURL *url = [NSURL URLWithString:@"https://stream.twitter.com/1/statuses/filter.json"];
-//    NSMutableURLRequest *request= [[NSMutableURLRequest alloc] initWithURL:url];
-//    [request setHTTPMethod:@"POST"];
-//    NSString *userpass = [self.twitterUsername stringByAppendingString:[NSString stringWithFormat:@":%@", self.twitterPassword]];
-//    NSLog(@"USERPASS: %@", userpass);
-//    NSString *authString = [self Base64Encode:[userpass dataUsingEncoding:NSUTF8StringEncoding]];
-//    [request setValue:authString forHTTPHeaderField:@"Authorization"];
-//    [request setHTTPBody:postData];
-//    
-//    NSLog(@"request:\n%@", [request HTTPBody]);
-//    //wait for twitterConnection to get killed
-//    while(self.twitterConnection){
-//        [NSThread sleepForTimeInterval:.25]; 
-//    }
-//    self.twitterConnection = [NSURLConnection connectionWithRequest:request delegate:self];
-//}
-
-
 
 -(void) stopStream{
     [self.twitterConnection cancel];
@@ -134,12 +69,56 @@
     self.swCorner = southWest;
     self.neCorner = northEast;
     
-    NSMutableString *geoBoxSpec = [[NSMutableString alloc] initWithString:@"locations="];
-    [geoBoxSpec appendString:[NSString stringWithFormat:@"%f,%f,%f,%f", southWest.longitude, southWest.latitude, northEast.longitude, northEast.latitude]];
-    [geoBoxSpec appendString:@"&stall_warings=true"];
-    NSString *requestBody = [NSString stringWithString:geoBoxSpec];
-    NSLog(@"twitter request body: \n%@\n\n", requestBody);
-    [self sendTwitterStreamingRequestWithBody:requestBody];
+    NSString *location = [NSString stringWithFormat:@"%f,%f,%f,%f", southWest.longitude, southWest.latitude, northEast.longitude, northEast.latitude];
+    //[[NSMutableString alloc] initWithString:@"locations="];
+    //[geoBoxSpec appendString:@"&stall_warings=true"];
+    //NSString *requestBody = [NSString stringWithString:geoBoxSpec];
+    
+    //  First, we need to obtain the account instance for the user's Twitter account
+    ACAccountStore *store = [[ACAccountStore alloc] init];
+    ACAccountType *twitterAccountType =
+    [store accountTypeWithAccountTypeIdentifier:ACAccountTypeIdentifierTwitter];
+    
+    //  Request permission from the user to access the available Twitter accounts
+    [store requestAccessToAccountsWithType:twitterAccountType
+                     withCompletionHandler:^(BOOL granted, NSError *error) {
+                         if (!granted) {
+                             // The user rejected your request
+                             NSLog(@"User rejected access to the account.");
+                         }
+                         else {
+                             // Grab the available accounts
+                             NSArray *twitterAccounts =
+                             [store accountsWithAccountType:twitterAccountType];
+                             
+                             if ([twitterAccounts count] > 0) {
+                                 // Use the first account for simplicity
+                                 ACAccount *account = [twitterAccounts objectAtIndex:0];
+                                 
+                                 // Now make an authenticated request to our endpoint
+                                 NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
+                                 [params setObject:@"1" forKey:@"include_entities"];
+                                 
+                                 //  The endpoint that we wish to call
+                                 NSURL *url =
+                                 [NSURL
+                                  URLWithString:@"http://api.twitter.com/1/statuses/home_timeline.json"];
+                                 
+                                 //  Build the request with our parameter
+                                 TWRequest *request =
+                                 [[TWRequest alloc] initWithURL:url
+                                                     parameters:params
+                                                  requestMethod:TWRequestMethodGET];
+                                 
+                                 // Attach the account object to this request
+                                 [request setAccount:account];
+                                 
+                                 request.signedURLRequest
+                                 
+                             } // if ([twitterAccounts count] > 0)
+                         } // if (granted) 
+                     }];
+    
     NSLog(@"\n-------- TWITTER STREAM INITIATED ---------");
 }
 

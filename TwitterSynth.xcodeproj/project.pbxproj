@@ -24,6 +24,7 @@
 		5AACA20C1582E23A0012C2E4 /* WFBViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5AACA20B1582E23A0012C2E4 /* WFBViewController.m */; };
 		5AACA2141582E7640012C2E4 /* WFBTwitterStream.m in Sources */ = {isa = PBXBuildFile; fileRef = 5AACA2131582E7640012C2E4 /* WFBTwitterStream.m */; };
 		5AAF6C8E15A9FCAA00E4D6F8 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5AAF6C8D15A9FCAA00E4D6F8 /* AVFoundation.framework */; };
+		5AC910831608DC2600B72B13 /* Accounts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5AC910821608DC2600B72B13 /* Accounts.framework */; };
 		5ADDE6B615A2407F005ACB48 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5ADDE6B515A2407F005ACB48 /* AudioToolbox.framework */; };
 		5ADDE6B815A2447D005ACB48 /* CAStreamBasicDescription.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5ADDE6B715A2447D005ACB48 /* CAStreamBasicDescription.cpp */; };
 		5ADFFD991602508C00BE40AD /* WFBKeychainWrapper.m in Sources */ = {isa = PBXBuildFile; fileRef = 5ADFFD981602508C00BE40AD /* WFBKeychainWrapper.m */; };
@@ -61,6 +62,7 @@
 		5AACA2121582E7640012C2E4 /* WFBTwitterStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFBTwitterStream.h; sourceTree = "<group>"; };
 		5AACA2131582E7640012C2E4 /* WFBTwitterStream.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFBTwitterStream.m; sourceTree = "<group>"; };
 		5AAF6C8D15A9FCAA00E4D6F8 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		5AC910821608DC2600B72B13 /* Accounts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accounts.framework; path = System/Library/Frameworks/Accounts.framework; sourceTree = SDKROOT; };
 		5ADDE6B515A2407F005ACB48 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		5ADDE6B715A2447D005ACB48 /* CAStreamBasicDescription.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CAStreamBasicDescription.cpp; sourceTree = "<group>"; };
 		5ADDE6BA15A24521005ACB48 /* CAStreamBasicDescription.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CAStreamBasicDescription.h; sourceTree = "<group>"; };
@@ -78,6 +80,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5AC910831608DC2600B72B13 /* Accounts.framework in Frameworks */,
 				5A86C34E1607F7AA0088F308 /* Twitter.framework in Frameworks */,
 				5ADFFD9C1602590400BE40AD /* Security.framework in Frameworks */,
 				5AAF6C8E15A9FCAA00E4D6F8 /* AVFoundation.framework in Frameworks */,
@@ -95,6 +98,7 @@
 		5AACA1E61582E23A0012C2E4 = {
 			isa = PBXGroup;
 			children = (
+				5AC910821608DC2600B72B13 /* Accounts.framework */,
 				5AACA1FB1582E23A0012C2E4 /* TwitterSynth */,
 				5AACA1F41582E23A0012C2E4 /* Frameworks */,
 				5AACA1F21582E23A0012C2E4 /* Products */,

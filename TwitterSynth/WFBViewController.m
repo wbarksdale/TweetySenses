@@ -65,16 +65,16 @@
     [super viewDidLoad];
 }
 
-- (void)viewDidAppear:(BOOL)animated{
-    id username = [WFBKeychainWrapper load:@"username"];
-    if(username == nil){
-        NSLog(@"no username");
-        UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"MainStoryboard" bundle:nil];
-        WFBLoginViewController *loginController = (WFBLoginViewController *)[storyboard instantiateViewControllerWithIdentifier:@"LoginViewController"];
-        loginController.modalPresentationStyle = UIModalPresentationFullScreen;
-        [self presentViewController:loginController animated:YES completion:^(void){NSLog(@"completed")}];
-    }
-}
+//- (void)viewDidAppear:(BOOL)animated{
+//    id username = [WFBKeychainWrapper load:@"username"];
+//    if(username == nil){
+//        NSLog(@"no username");
+//        UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"MainStoryboard" bundle:nil];
+//        WFBLoginViewController *loginController = (WFBLoginViewController *)[storyboard instantiateViewControllerWithIdentifier:@"LoginViewController"];
+//        loginController.modalPresentationStyle = UIModalPresentationFullScreen;
+//        [self presentViewController:loginController animated:YES completion:^(void){NSLog(@"completed")}];
+//    }
+//}
 
 - (IBAction)login:(id)sender{
     [WFBKeychainWrapper delete:@"username"];
