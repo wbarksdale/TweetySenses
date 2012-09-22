@@ -22,6 +22,11 @@
 @synthesize streaming;
 @synthesize streamInitiated;
 
+#define WFBTwitterConnectionFailure     @"WFBTwitterConnectionFailure"
+#define WFBTwitterConnectionSuccess     @"WFBTwitterConnectionSuccess"
+#define WFBLocationAquired              @"WFBLocationAquired"
+#define WFBFailedToAquireLocation       @"WFBFailedToAquireLocation"
+
 -(BOOL) streaming{
     if(self.twitterConnection)
         return true;
@@ -58,13 +63,31 @@
                          if (!granted) {
                              // The user rejected your request
                              NSLog(@"User rejected access to the account.");
+                             [[NSNotificationCenter defaultCenter] postNotificationName:WFBTwitterConnectionFailure object:self];
                          }
                          else {
                              // Grab the available accounts
                              NSArray *twitterAccounts = [store accountsWithAccountType:twitterAccountType];
-                             if ([twitterAccounts count] > 0) {
-                                 // Use the first account for simplicity
+                             if ([twitterAccounts count] == 0){
+                                 NSLog(@"no twitter Accounts");
+                                 [[NSNotificationCenter defaultCenter] postNotificationName:WFBTwitterConnectionFailure object:self];
+                                 dispatch_async(dispatch_get_main_queue(), ^{
+                                     UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"No Twitter Accounts"
+                                                                                     message:@"There are no Twitter accounts configured. You can add or create a Twitter account in Settings."
+                                                                                    delegate:nil
+                                                                           cancelButtonTitle:@"OK"
+                                                                           otherButtonTitles:nil];
+                                     [alert show];
+                                 });
+                             } else if ([twitterAccounts count] > 0) {
+                                 // this can be set in settings, default is to use the first account
+                                 NSString *username = [[NSUserDefaults standardUserDefaults] stringForKey:@"TwitterAccount"];
+                                 NSLog(@"username was set to %@", username);
                                  ACAccount *account = [twitterAccounts objectAtIndex:0];
+                                 NSLog(@"default account was %@", account.username);
+                                 for(ACAccount *tempAcct in twitterAccounts){
+                                     if([tempAcct.username isEqualToString:username]) account = tempAcct;
+                                 }
                                  NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
                                  [params setObject:@"1" forKey:@"include_entities"];
                                  [params setObject:location forKey:@"locations"];
@@ -89,37 +112,27 @@
                                  [self.twitterConnection scheduleInRunLoop:[NSRunLoop mainRunLoop]
                                                        forMode:NSDefaultRunLoopMode];
                                  [self.twitterConnection start];
-                                 
-                             } // if ([twitterAccounts count] > 0)
-                         } // if (granted) 
+                                 [[NSNotificationCenter defaultCenter] postNotificationName:WFBTwitterConnectionSuccess object:self];
+                                 NSLog(@"\n-------- TWITTER STREAM INITIATED ---------");
+                             }
+                         }
                      }];
-    
-    NSLog(@"\n-------- TWITTER STREAM INITIATED ---------");
 }
 
 #pragma mark NSURLConnectionDelegate methods
 
 - (void)connection:(NSURLConnection *)connection didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge {
     NSLog(@"AUTH FAILED, SOMETHING IS WRONG");
-    if ([challenge previousFailureCount] == 0) {
-        NSLog(@"received authentication challenge");
-    }
-    else {
-        NSLog(@"previous authentication failure");
-    }
 }
 
 - (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response {
-    NSLog(@"got reponse");
-    NSHTTPURLResponse *resp = (NSHTTPURLResponse *) response;
-    NSLog(@"\n\tresponse: %d\n\t%@", [resp statusCode], [resp allHeaderFields]);
+    NSLog(@"Response Recieved");
 }
 
 - (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data {
     NSError *error;
     NSString *response = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
     NSArray *tweetStrings = [response componentsSeparatedByString:@"\r\n"];
-    NSLog(@"tweets received : %d", tweetStrings.count);
     for(NSString *tweet in tweetStrings){
         NSDictionary *jsonDictionary = [NSJSONSerialization JSONObjectWithData: [tweet dataUsingEncoding:NSUTF8StringEncoding] options:NSJSONWritingPrettyPrinted error:&error];
         NSDictionary *warning = [jsonDictionary objectForKey:@"warning"];
@@ -135,10 +148,12 @@
 }
 
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error {
-    self.twitterConnection = nil;
     NSLog(@"connection failed with error:\n %@", error);
+    self.twitterConnection = nil;
+    [[NSNotificationCenter defaultCenter] postNotificationName:WFBTwitterConnectionFailure object:self];
 }
 
+//currently not used
 -(NSString *)Base64Encode:(NSData *)data{
     //Point to start of the data and set buffer sizes
     int inLength = [data length];

@@ -18,8 +18,7 @@
     WFBTwitterStream *twitterStream;
     CLLocationManager *locationManager;
     WFBSynth *synth;
-    
-    bool isPlaying;
+
     bool bleepProfanities;
     
     IBOutlet UIPickerView *soundPicker;
@@ -28,13 +27,11 @@
 }
 
 - (IBAction)playButtonPressed:(id)sender;
-- (IBAction)bleepProfanitiesChanged:(id)sender;
 - (IBAction)runSynthTests:(id)sender;
 
 - (void) stopStream;
 - (void) stopTrackingLocation;
 
-@property(nonatomic) bool isPlaying;
 @property(nonatomic) bool bleepProfanities;
 
 @property(nonatomic, strong) IBOutlet UIPickerView *soundPicker;

@@ -7,9 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		5A040005158C0E0D00611417 /* WFBTweetDataAnalyzer.m in Sources */ = {isa = PBXBuildFile; fileRef = 5A040004158C0E0D00611417 /* WFBTweetDataAnalyzer.m */; };
 		5A040008158CE0EB00611417 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5A040007158CE0EB00611417 /* CoreLocation.framework */; };
 		5A04000F158D2B6900611417 /* WFBSynth.mm in Sources */ = {isa = PBXBuildFile; fileRef = 5A04000E158D2B6900611417 /* WFBSynth.mm */; };
+		5A5D5EFA160E2BD700D5EEA8 /* WFBSettingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5A5D5EF9160E2BD700D5EEA8 /* WFBSettingsViewController.m */; };
 		5A7099A915B2485600661D50 /* tweetsounds in Resources */ = {isa = PBXBuildFile; fileRef = 5A7099A815B2485600661D50 /* tweetsounds */; };
 		5A7099AE15B261E500661D50 /* WFBSoundSourceManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 5A7099AD15B261E500661D50 /* WFBSoundSourceManager.m */; };
 		5A86C34E1607F7AA0088F308 /* Twitter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5A86C34D1607F7AA0088F308 /* Twitter.framework */; };
@@ -30,14 +30,14 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		5A040003158C0E0D00611417 /* WFBTweetDataAnalyzer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFBTweetDataAnalyzer.h; sourceTree = "<group>"; };
-		5A040004158C0E0D00611417 /* WFBTweetDataAnalyzer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFBTweetDataAnalyzer.m; sourceTree = "<group>"; };
 		5A040006158C11EB00611417 /* WFBTwitterStreamListener.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WFBTwitterStreamListener.h; sourceTree = "<group>"; };
 		5A040007158CE0EB00611417 /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
 		5A040009158CF2DC00611417 /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = System/Library/Frameworks/MapKit.framework; sourceTree = SDKROOT; };
 		5A04000B158D2B3E00611417 /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = System/Library/Frameworks/OpenAL.framework; sourceTree = SDKROOT; };
 		5A04000D158D2B6900611417 /* WFBSynth.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFBSynth.h; sourceTree = "<group>"; };
 		5A04000E158D2B6900611417 /* WFBSynth.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = WFBSynth.mm; sourceTree = "<group>"; };
+		5A5D5EF8160E2BD700D5EEA8 /* WFBSettingsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFBSettingsViewController.h; sourceTree = "<group>"; };
+		5A5D5EF9160E2BD700D5EEA8 /* WFBSettingsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFBSettingsViewController.m; sourceTree = "<group>"; };
 		5A7099A815B2485600661D50 /* tweetsounds */ = {isa = PBXFileReference; lastKnownFileType = folder; name = tweetsounds; path = ../tweetsounds; sourceTree = "<group>"; };
 		5A7099AA15B251F200661D50 /* WFBSoundSourceManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WFBSoundSourceManager.h; sourceTree = "<group>"; };
 		5A7099AD15B261E500661D50 /* WFBSoundSourceManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WFBSoundSourceManager.m; sourceTree = "<group>"; };
@@ -137,9 +137,9 @@
 				5AACA20B1582E23A0012C2E4 /* WFBViewController.m */,
 				5AACA2121582E7640012C2E4 /* WFBTwitterStream.h */,
 				5AACA2131582E7640012C2E4 /* WFBTwitterStream.m */,
-				5A040003158C0E0D00611417 /* WFBTweetDataAnalyzer.h */,
-				5A040004158C0E0D00611417 /* WFBTweetDataAnalyzer.m */,
 				5A040006158C11EB00611417 /* WFBTwitterStreamListener.h */,
+				5A5D5EF8160E2BD700D5EEA8 /* WFBSettingsViewController.h */,
+				5A5D5EF9160E2BD700D5EEA8 /* WFBSettingsViewController.m */,
 				5AACA1FC1582E23A0012C2E4 /* Supporting Files */,
 			);
 			path = TwitterSynth;
@@ -242,9 +242,9 @@
 				5AACA2061582E23A0012C2E4 /* WFBAppDelegate.m in Sources */,
 				5AACA20C1582E23A0012C2E4 /* WFBViewController.m in Sources */,
 				5AACA2141582E7640012C2E4 /* WFBTwitterStream.m in Sources */,
-				5A040005158C0E0D00611417 /* WFBTweetDataAnalyzer.m in Sources */,
 				5A04000F158D2B6900611417 /* WFBSynth.mm in Sources */,
 				5A7099AE15B261E500661D50 /* WFBSoundSourceManager.m in Sources */,
+				5A5D5EFA160E2BD700D5EEA8 /* WFBSettingsViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

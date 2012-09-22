@@ -159,9 +159,9 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
 
 - (void)readAudioFileIntoMemory: (NSString *) fileURL{
     //create CFURL
-    NSURL *pingUrl = [NSURL URLWithString:fileURL];
+    NSURL __strong *pingUrl = [NSURL URLWithString:[fileURL stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
     CFURLRef audioFile = (__bridge CFURLRef) pingUrl;
-    NSLog (@"readAudioFilesIntoMemory - file: %@", pingUrl);
+    NSLog (@"readAudioFilesIntoMemory - file: %@", fileURL);
     
     // Instantiate an extended audio file object
     // and open the audio file and associate it with the extended audio file object.
@@ -928,7 +928,7 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
     resultString[4] = '\0';
     
     DLog (
-           @"*** %@ error: %d %08X %4.4s\n",
+           @"*** %@ error: %s",
            errorString,
            (char*) &resultString
            );

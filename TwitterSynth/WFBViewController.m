@@ -17,7 +17,16 @@
 #define MIN_FOLLOWER_COUNT 20
 #define MAX_FOLLOWER_COUNT 3000
 
-@interface WFBViewController()
+@interface WFBViewController(){
+    bool shouldStream;
+    bool isStreaming;
+    bool isPlaying;
+}
+
+@property(nonatomic) bool shouldStream;
+@property(nonatomic) bool isStreaming;
+@property(nonatomic) bool shouldPlay;
+@property(nonatomic) bool isPlaying;
 
 -(void) startTwitterStream;
 
@@ -29,39 +38,85 @@
     CLLocation *location;
 }
 
+
 @synthesize synth;
 @synthesize twitterStream;
 @synthesize locationManager;
-
-@synthesize isPlaying;
 @synthesize bleepProfanities;
-
 @synthesize playButton;
 @synthesize soundPicker;
 @synthesize tweetLabel;
 
+@synthesize shouldStream;
+@synthesize isStreaming;
+@synthesize isPlaying;
+
+#define WFBTwitterConnectionFailure     @"WFBTwitterConnectionFailure"
+#define WFBTwitterConnectionSuccess     @"WFBTwitterConnectionSuccess"
+#define WFBLocationAquired              @"WFBLocationAquired"
+#define WFBFailedToAquireLocation       @"WFBFailedToAquireLocation"
+
 - (id) initWithCoder:(NSCoder *)aDecoder{
     if(self = [super initWithCoder:aDecoder]){
+        self.shouldPlay = false;
         self.isPlaying = false;
+        self.shouldStream = false;
+        self.isStreaming = false;
+        
         self.bleepProfanities = true;
         [WFBSoundSourceManager loadSoundSourceList];
         self.synth = [[WFBSynth alloc] init];
+        
+        //register for notifications
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(processNotification:)
+                                                     name:WFBTwitterConnectionSuccess
+                                                   object:nil];
+        //register for notifications
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(processNotification:)
+                                                     name:WFBTwitterConnectionFailure
+                                                   object:nil];
+        //register for notifications
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(processNotification:)
+                                                     name:WFBLocationAquired
+                                                   object:nil];
+        //register for notifications
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(processNotification:)
+                                                     name:WFBFailedToAquireLocation
+                                                   object:nil];
     }
     return self;
 }
 
-- (void) trackLocation{
-    //get location
-    locationManager = [[CLLocationManager alloc] init];
-    locationManager.delegate = self;
-    locationManager.desiredAccuracy = kCLLocationAccuracyBest;
-    locationManager.distanceFilter = kCLDistanceFilterNone;
-    [locationManager startUpdatingLocation];
-    [locationManager startUpdatingHeading];
-}
-
-- (void) stopTrackingLocation{
-    [locationManager stopUpdatingLocation];
+- (void) processNotification: (NSNotification *) notification{
+    NSLog(@"Notification Delivered: %@", [notification name]);
+    NSString *note = [notification name];
+    if([note isEqualToString:WFBFailedToAquireLocation]){
+        NSLog(@"Failed to Aquire location");
+        //alert user
+    }
+    if([note isEqualToString:WFBLocationAquired]){
+        if(self.shouldStream){
+            [self startTwitterStream];
+        }
+    }
+    if([note isEqualToString:WFBTwitterConnectionSuccess]){
+        [synth startAUGraph];
+        self.isStreaming = true;
+        self.isPlaying = true;
+    }
+    if([note isEqualToString:WFBTwitterConnectionFailure]){
+        NSLog(@"could not connect to twitter stream");
+        [self stopTrackingLocation];
+        [self stopTwitterStream];
+        self.isStreaming = false;
+        self.shouldStream = false;
+        self.isPlaying = false;
+        //alert user
+    }
 }
 
 - (void) viewDidLoad
@@ -69,13 +124,11 @@
     [super viewDidLoad];
 }
 
-- (void)stopStream{
-    [twitterStream stopStream];
-}
-
 - (IBAction)playButtonPressed:(id)sender{
-    if(self.isPlaying){
-        //stop playing
+    if(self.shouldStream && !self.isPlaying){
+        return;
+    }
+    if(self.shouldStream){
         [playButton setTitle:@"Play" forState:UIControlStateNormal];
         [self stopTwitterStream];
         [self stopTrackingLocation];
@@ -83,15 +136,17 @@
         self.isPlaying = false;
     }else{
         [playButton setTitle:@"Stop" forState:UIControlStateNormal];
-        [self trackLocation]; //twitter stream gets started on first location update
-        [synth startAUGraph];
-        self.isPlaying = true;
+        //first get some kind of location
+        [self stopTwitterStream];   // just to make sure the connection is dead
+        self.shouldStream = true;
+        [self startTrackingLocation];
     }
 }
 
--(void) stopTwitterStream {
-    self.twitterStream.twitterConnection = nil;
-    self.twitterStream = nil;
+- (void)stopTwitterStream{
+    self.isStreaming = false;
+    self.shouldStream = false;
+    [twitterStream stopStream];
 }
 
 -(void) startTwitterStream {
@@ -113,10 +168,20 @@
     }
 }
 
-- (IBAction)bleepProfanitiesChanged:(id)sender{
-    UISwitch *bleepSwitch = (UISwitch *) sender;
-    self.bleepProfanities = bleepSwitch.isOn;
-    NSLog(@"bleepProfanities = %@", self.bleepProfanities ? @"true" : @"false");
+- (void) startTrackingLocation{
+    //get location
+    location = nil;
+    locationManager = [[CLLocationManager alloc] init];
+    locationManager.delegate = self;
+    locationManager.desiredAccuracy = kCLLocationAccuracyBest;
+    locationManager.distanceFilter = kCLDistanceFilterNone;
+    [locationManager startUpdatingLocation];
+    [locationManager startUpdatingHeading];
+}
+
+- (void) stopTrackingLocation{
+    [locationManager stopUpdatingLocation];
+    location = nil;
 }
 
 #define TEST_DISTANCE true
@@ -182,7 +247,12 @@
 #pragma mark TweetStreamDelegate methods
 
 - (void) receiveTweet:(NSDictionary *) tweet{
-    //NSLog(@"%@", tweet);
+    if(!synth.isPlaying){
+        NSLog(@"Got the first tweet");
+        [playButton setTitle:@"Stop" forState:UIControlStateNormal];
+        [synth startAUGraph];
+        self.isPlaying = true;
+    }
     NSDictionary *coordinatesDict = [tweet objectForKey:@"coordinates"];
     if(![coordinatesDict isEqual: [NSNull null]]){
         NSArray *coordinatesArray = [coordinatesDict objectForKey:@"coordinates"];
@@ -287,12 +357,22 @@ static NSArray *profanities = [NSArray arrayWithObjects:
 
 - (void)locationManager:(CLLocationManager *)manager didUpdateToLocation:(CLLocation *)newLocation fromLocation:(CLLocation *)oldLocation
 {
-    location = newLocation;
-    @synchronized(self){
-        if(!self.twitterStream){
-            [self startTwitterStream];
+    if(!self.isStreaming){
+        NSLog(@"not streaming")
+        @synchronized(self){
+            NSLog(@"synchronized")
+            if(!newLocation){
+                NSLog(@"Invalid Location was delivered for some reason");
+                return;
+            }
+            if(!location && self.shouldStream){
+                NSLog(@"posting note");
+                location = newLocation;
+                [[NSNotificationCenter defaultCenter] postNotificationName:WFBLocationAquired object:nil];
+            }
         }
     }
+    location = newLocation;
 }
 
 - (void)locationManager:(CLLocationManager *)manager didFailWithError:(NSError *)error
@@ -325,6 +405,7 @@ static NSArray *profanities = [NSArray arrayWithObjects:
 - (void)pickerView:(UIPickerView *)pickerView didSelectRow:(NSInteger)row inComponent:(NSInteger)component{
     NSArray *sounds = [WFBSoundSourceManager getSounds];
     NSString *soundUrl = [WFBSoundSourceManager getURLForSound:[sounds objectAtIndex:row]];
+    NSLog(@"sound url %@", soundUrl);
     [synth readAudioFileIntoMemory:soundUrl];
 }
 

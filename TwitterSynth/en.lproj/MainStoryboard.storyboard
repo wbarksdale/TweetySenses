@@ -1,29 +1,44 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="2.0" toolsVersion="2549" systemVersion="12B19" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" initialViewController="1Ni-BI-mCv">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="2.0" toolsVersion="2840" systemVersion="12C54" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" initialViewController="1Ni-BI-mCv">
     <dependencies>
-        <deployment defaultVersion="1296" identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="1498"/>
+        <deployment defaultVersion="1536" identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="1926"/>
     </dependencies>
     <scenes>
-        <!--View Controller - Settings-->
+        <!--Settings View Controller - Settings-->
         <scene sceneID="kaV-Db-yzC">
             <objects>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="35E-Xu-eFc" userLabel="First Responder" sceneMemberID="firstResponder"/>
-                <viewController id="EuB-pE-bTw" sceneMemberID="viewController">
+                <viewController id="EuB-pE-bTw" customClass="WFBSettingsViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="E1j-gx-R1W">
                         <rect key="frame" x="0.0" y="20" width="320" height="411"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <subviews>
+                            <switch opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" id="Jzi-4m-5kg">
+                                <rect key="frame" x="223" y="20" width="79" height="27"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <connections>
+                                    <action selector="bleepProfanitiesChanged:" destination="EuB-pE-bTw" eventType="valueChanged" id="juA-JX-73G"/>
+                                </connections>
+                            </switch>
+                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="Bleep Profane Tweets" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="2Dm-ln-Exz">
+                                <rect key="frame" x="20" y="23" width="171" height="21"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                     </view>
                     <tabBarItem key="tabBarItem" title="Settings" id="QDF-Kn-Ebl"/>
                 </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="35E-Xu-eFc" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="-328" y="56"/>
         </scene>
         <!--Tab Bar Controller-->
         <scene sceneID="M4h-xP-4UT">
             <objects>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="G7y-ih-gyg" userLabel="First Responder" sceneMemberID="firstResponder"/>
                 <tabBarController definesPresentationContext="YES" id="1Ni-BI-mCv" sceneMemberID="viewController">
                     <nil key="simulatedBottomBarMetrics"/>
                     <tabBar key="tabBar" contentMode="scaleToFill" id="WPL-p5-1YP">
@@ -36,13 +51,13 @@
                         <segue destination="EuB-pE-bTw" kind="relationship" relationship="viewControllers" id="8en-vb-x7q"/>
                     </connections>
                 </tabBarController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="G7y-ih-gyg" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="-862" y="-226"/>
         </scene>
         <!--View Controller - Twitter Synth-->
         <scene sceneID="5">
             <objects>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="4" sceneMemberID="firstResponder"/>
                 <viewController id="2" customClass="WFBViewController" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="3">
                         <rect key="frame" x="0.0" y="20" width="320" height="411"/>
@@ -71,42 +86,13 @@
                                     <action selector="playButtonPressed:" destination="2" eventType="touchUpInside" id="V5H-KF-aiG"/>
                                 </connections>
                             </button>
-                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="Bleep Profanities:" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="10" id="H5m-6J-cu4">
-                                <rect key="frame" x="20" y="282" width="134" height="21"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <switch opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" id="pGh-gZ-Ay9">
-                                <rect key="frame" x="221" y="278" width="79" height="27"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <connections>
-                                    <action selector="bleepProfanitiesChanged:" destination="2" eventType="valueChanged" id="hSJ-hw-CUM"/>
-                                </connections>
-                            </switch>
                             <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="Tweet Tweet" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" minimumFontSize="10" adjustsFontSizeToFit="NO" id="ybI-5V-aLJ">
-                                <rect key="frame" x="20" y="345" width="280" height="55"/>
+                                <rect key="frame" x="20" y="281" width="280" height="119"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="20"/>
                                 <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="jCU-N4-KyI">
-                                <rect key="frame" x="26" y="311" width="72" height="37"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <fontDescription key="fontDescription" type="boldSystem" pointSize="15"/>
-                                <state key="normal" title="Test">
-                                    <color key="titleColor" red="0.19607843459999999" green="0.30980393290000002" blue="0.52156865600000002" alpha="1" colorSpace="calibratedRGB"/>
-                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
-                                </state>
-                                <state key="highlighted">
-                                    <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                </state>
-                                <connections>
-                                    <action selector="runSynthTests:" destination="2" eventType="touchUpInside" id="HK0-sj-KNw"/>
-                                </connections>
-                            </button>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                     </view>
@@ -117,16 +103,35 @@
                         <outlet property="tweetLabel" destination="ybI-5V-aLJ" id="aoC-9Q-oDo"/>
                     </connections>
                 </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="4" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="-328" y="-538"/>
         </scene>
+        <!--View Controller-->
+        <scene sceneID="kJ5-Zr-IpL">
+            <objects>
+                <viewController id="uDt-Du-L2x" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="wSB-5j-wBl">
+                        <rect key="frame" x="0.0" y="20" width="320" height="460"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="p6k-YB-YC7" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+        </scene>
     </scenes>
     <classes>
+        <class className="WFBSettingsViewController" superclassName="UIViewController">
+            <source key="sourceIdentifier" type="project" relativePath="./Classes/WFBSettingsViewController.h"/>
+            <relationships>
+                <relationship kind="action" name="bleepProfanitiesChanged:"/>
+                <relationship kind="action" name="bleepProfanititesChanged:"/>
+            </relationships>
+        </class>
         <class className="WFBViewController" superclassName="UIViewController">
             <source key="sourceIdentifier" type="project" relativePath="./Classes/WFBViewController.h"/>
             <relationships>
-                <relationship kind="action" name="bleepProfanitiesChanged:"/>
-                <relationship kind="action" name="login:"/>
                 <relationship kind="action" name="playButtonPressed:"/>
                 <relationship kind="action" name="runSynthTests:"/>
                 <relationship kind="outlet" name="playButton" candidateClass="UIButton"/>
