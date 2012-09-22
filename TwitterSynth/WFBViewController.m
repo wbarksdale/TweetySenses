@@ -358,9 +358,9 @@ static NSArray *profanities = [NSArray arrayWithObjects:
 - (void)locationManager:(CLLocationManager *)manager didUpdateToLocation:(CLLocation *)newLocation fromLocation:(CLLocation *)oldLocation
 {
     if(!self.isStreaming){
-        NSLog(@"not streaming")
+        NSLog(@"not streaming");
         @synchronized(self){
-            NSLog(@"synchronized")
+            NSLog(@"synchronized");
             if(!newLocation){
                 NSLog(@"Invalid Location was delivered for some reason");
                 return;
