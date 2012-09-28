@@ -27,10 +27,35 @@
                                 <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <slider opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="150" minValue="50" maxValue="350" id="Cl0-cA-Glp">
+                                <rect key="frame" x="18" y="111" width="284" height="23"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <connections>
+                                    <action selector="valueChanged:" destination="EuB-pE-bTw" eventType="valueChanged" id="RhJ-ns-8bX"/>
+                                </connections>
+                            </slider>
+                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="Geo Box Size: " lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="sEL-v4-VRu">
+                                <rect key="frame" x="20" y="65" width="138" height="38"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="150km" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="TNw-5D-At3">
+                                <rect key="frame" x="223" y="65" width="77" height="38"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                     </view>
                     <tabBarItem key="tabBarItem" title="Settings" id="QDF-Kn-Ebl"/>
+                    <connections>
+                        <outlet property="boundingBoxSizeLabel" destination="TNw-5D-At3" id="svq-Kk-Vor"/>
+                        <outlet property="boundingBoxSlider" destination="Cl0-cA-Glp" id="ssC-yR-wh3"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="35E-Xu-eFc" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
@@ -126,7 +151,9 @@
             <source key="sourceIdentifier" type="project" relativePath="./Classes/WFBSettingsViewController.h"/>
             <relationships>
                 <relationship kind="action" name="bleepProfanitiesChanged:"/>
-                <relationship kind="action" name="bleepProfanititesChanged:"/>
+                <relationship kind="action" name="valueChanged:"/>
+                <relationship kind="outlet" name="boundingBoxSizeLabel" candidateClass="UILabel"/>
+                <relationship kind="outlet" name="boundingBoxSlider" candidateClass="UISlider"/>
             </relationships>
         </class>
         <class className="WFBViewController" superclassName="UIViewController">

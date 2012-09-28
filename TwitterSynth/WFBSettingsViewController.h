@@ -9,9 +9,14 @@
 #import <UIKit/UIKit.h>
 
 @interface WFBSettingsViewController : UIViewController{
-
+    IBOutlet UISlider *boundingBoxSlider;
+    IBOutlet UILabel *boundingBoxSizeLabel;
 }
 
+@property(nonatomic, retain) IBOutlet UISlider *boundingBoxSlider;
+@property(nonatomic, retain) IBOutlet UILabel *boundingBoxSizeLabel;
+
 - (IBAction)bleepProfanitiesChanged:(id)sender;
+- (IBAction)valueChanged:(id)sender;
 
 @end

@@ -64,6 +64,14 @@
                              // The user rejected your request
                              NSLog(@"User rejected access to the account.");
                              [[NSNotificationCenter defaultCenter] postNotificationName:WFBTwitterConnectionFailure object:self];
+                             dispatch_async(dispatch_get_main_queue(), ^{
+                                 UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"No Twitter Accounts"
+                                                                                 message:@"There are no Twitter accounts configured. You can add or create a Twitter account in Settings."
+                                                                                delegate:nil
+                                                                       cancelButtonTitle:@"OK"
+                                                                       otherButtonTitles:nil];
+                                 [alert show];
+                             });
                          }
                          else {
                              // Grab the available accounts

@@ -7,8 +7,6 @@
 //
 
 #import "WFBViewController.h"
-
-#define kBOUNDING_BOX_SIZE 222000
 //111,000m in 1 degree
 
 #define MIN_PLAYBACK_RATE .25
@@ -46,6 +44,7 @@
 @synthesize playButton;
 @synthesize soundPicker;
 @synthesize tweetLabel;
+@synthesize boundingBoxSize;
 
 @synthesize shouldStream;
 @synthesize isStreaming;
@@ -62,6 +61,7 @@
         self.isPlaying = false;
         self.shouldStream = false;
         self.isStreaming = false;
+        self.boundingBoxSize = 150000;
         
         self.bleepProfanities = true;
         [WFBSoundSourceManager loadSoundSourceList];
@@ -115,6 +115,7 @@
         self.isStreaming = false;
         self.shouldStream = false;
         self.isPlaying = false;
+        [playButton setTitle:@"Play" forState:UIControlStateNormal];
         //alert user
     }
 }
@@ -153,11 +154,11 @@
     self.twitterStream = [[WFBTwitterStream alloc] initWithListener:self];
     if(location != nil){
         CLLocationCoordinate2D loc = [location coordinate];
-        NSLog(@"bouding box is %f degrees", kBOUNDING_BOX_SIZE/111000.0);
-        CLLocationDegrees northBorder = loc.latitude + kBOUNDING_BOX_SIZE / 111000;
-        CLLocationDegrees southBorder = loc.latitude - kBOUNDING_BOX_SIZE / 111000;
-        CLLocationDegrees westBorder = loc.longitude - kBOUNDING_BOX_SIZE / 111000;
-        CLLocationDegrees eastBorder = loc.longitude + kBOUNDING_BOX_SIZE / 111000;
+        NSLog(@"bouding box is %f degrees", self.boundingBoxSize/111000.0);
+        CLLocationDegrees northBorder = loc.latitude + self.boundingBoxSize / 111000;
+        CLLocationDegrees southBorder = loc.latitude - self.boundingBoxSize / 111000;
+        CLLocationDegrees westBorder = loc.longitude - self.boundingBoxSize / 111000;
+        CLLocationDegrees eastBorder = loc.longitude + self.boundingBoxSize / 111000;
         CLLocationCoordinate2D southWest = CLLocationCoordinate2DMake(southBorder, westBorder);
         CLLocationCoordinate2D northEast = CLLocationCoordinate2DMake(northBorder, eastBorder);
         NSLog(@"latitutde: %f", loc.latitude);
@@ -210,7 +211,6 @@
             [NSThread sleepForTimeInterval:.75];
         }
     }
-    
     [synth stopAUGraph];
 }
 
@@ -278,7 +278,7 @@
                 
                 //play some sound
                 if(self.isPlaying){
-                    double maxDistance = sqrt( (double) (2.0 * kBOUNDING_BOX_SIZE * kBOUNDING_BOX_SIZE) );
+                    double maxDistance = sqrt( (double) (2.0 * self.boundingBoxSize * self.boundingBoxSize) );
                     
                     //figure out what sound should play
                     NSString *sound = @"default";
@@ -324,6 +324,8 @@
     NSLog(@"warning message: \n%@\n\n", message);
 }
 
+//These values are not actually displayed to the user
+// but rather are used as filter words
 static NSArray *profanities = [NSArray arrayWithObjects:
                                @"fuck", 
                                @"bitch",

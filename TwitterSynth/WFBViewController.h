@@ -21,6 +21,7 @@
 
     bool bleepProfanities;
     
+    int boundingBoxSize;
     IBOutlet UIPickerView *soundPicker;
     IBOutlet UIButton *playButton;
     IBOutlet UILabel *tweetLabel;
@@ -33,6 +34,7 @@
 - (void) stopTrackingLocation;
 
 @property(nonatomic) bool bleepProfanities;
+@property(nonatomic) int boundingBoxSize;
 
 @property(nonatomic, strong) IBOutlet UIPickerView *soundPicker;
 @property(nonatomic, strong) IBOutlet UIButton *playButton;
