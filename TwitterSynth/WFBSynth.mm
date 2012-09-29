@@ -8,8 +8,6 @@
 
 #import "WFBSynth.h"
 
-#define kNumAudioSources 10
-
 #define MAX_ATTENUATION_DISTANCE 100.0
 
 #define REVERB false
@@ -109,11 +107,12 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
 @synthesize monoStreamFormat;
 @synthesize stereoStreamFormat;
 @synthesize nextAvailableUnit;
+@synthesize bleepOutBus;
+@synthesize nextAvailableFollowerUnit;
 
 - (id) init{
     if(self = [super init]){
         myself = self;
-        bleepOutBus = kNumAudioSources; //set the bleep out bus to and unused bus
         [self setupAudioSession];
         [self setupMonoStreamFormat];
         [self setupStereoStreamFormat];
@@ -400,6 +399,130 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
     ExtAudioFileDispose (audioFileObject);
 }
 
+- (void)readFollowerSoundIntoMemory:(NSString *) followerURL{
+    //create CFURL
+    NSURL __strong *pingUrl = [NSURL URLWithString:[followerURL stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+    CFURLRef audioFile = (__bridge CFURLRef) pingUrl;
+    NSLog (@"readAudioFilesIntoMemory - file: %@", followerURL);
+    
+    // Instantiate an extended audio file object
+    // and open the audio file and associate it with the extended audio file object.
+    ExtAudioFileRef audioFileObject = 0;
+    OSStatus result = ExtAudioFileOpenURL (audioFile, &audioFileObject);
+    
+    if (noErr != result || NULL == audioFileObject) {
+        [self printErrorMessage: @"ExtAudioFileOpenURL" withStatus: result]; return;}
+    
+    // Get the audio file's length in frames.
+    UInt64 totalFramesInFile = 0;
+    UInt32 frameLengthPropertySize = sizeof (totalFramesInFile);
+    
+    result =    ExtAudioFileGetProperty (
+                                         audioFileObject, //resulting audio file object
+                                         kExtAudioFileProperty_FileLengthFrames,
+                                         &frameLengthPropertySize,
+                                         &totalFramesInFile //pops the total frames of the audio into here
+                                         );
+    
+    if (noErr != result) {[self printErrorMessage: @"ExtAudioFileGetProperty (audio file length in frames)" withStatus: result]; return;}
+    
+    for(int i = 0; i<kNumFollowerSources; i++){
+        followerSoundStructs[i].frameCount = totalFramesInFile;
+    }
+    
+    // Assign the frame count to the followerStructArray instance variable
+    AudioStreamBasicDescription fileAudioFormat = {0};
+    UInt32 formatPropertySize = sizeof (fileAudioFormat);
+    result =    ExtAudioFileGetProperty (
+                                         audioFileObject,
+                                         kExtAudioFileProperty_FileDataFormat,
+                                         &formatPropertySize,
+                                         &fileAudioFormat
+                                         );
+    
+    if (noErr != result) {[self printErrorMessage: @"ExtAudioFileGetProperty (file audio format)" withStatus: result]; return;}
+    
+    UInt32 channelCount = fileAudioFormat.mChannelsPerFrame;
+    
+    // Allocate memory in each soundStruct to hold the audio data
+    // in this case I am letting all of the structs point to the same buffer
+    AudioSampleType *audioData = (AudioSampleType *) calloc (totalFramesInFile, sizeof (AudioSampleType));
+    for(int i = 0; i<kNumFollowerSources; i++){
+        followerSoundStructs[i].audioData = audioData;
+    }
+    
+    AudioStreamBasicDescription importFormat = monoStreamFormat;
+    
+    // Assign the appropriate mixer input bus stream data format to the extended audio
+    //        file object. This is the format used for the audio data placed into the audio
+    //        buffer in the SoundStruct data structure, which is in turn used in the
+    //        inputRenderCallback callback function.
+    
+    result =    ExtAudioFileSetProperty (
+                                         audioFileObject,
+                                         kExtAudioFileProperty_ClientDataFormat,
+                                         sizeof (importFormat),
+                                         &importFormat
+                                         );
+    
+    if (noErr != result) {[self printErrorMessage: @"ExtAudioFileSetProperty (client data format)" withStatus: result]; return;}
+    
+    // Set up an AudioBufferList struct, which has two roles:
+    //        1. It gives the ExtAudioFileRead function the configuration it
+    //            needs to correctly provide the data to the buffer.
+    //        2. It points to the soundStructArray[audioFile].audioDataLeft buffer, so
+    //            that audio data obtained from disk using the ExtAudioFileRead function
+    //            goes to that buffer
+    
+    // Allocate memory for the buffer list struct according to the number of
+    //    channels it represents.
+    AudioBufferList *bufferList;
+    
+    bufferList = (AudioBufferList *) malloc(sizeof (AudioBufferList));
+    
+    if (NULL == bufferList) {NSLog (@"*** malloc failure for allocating bufferList memory"); return;}
+    
+    // initialize the mNumberBuffers member
+    bufferList->mNumberBuffers = 1;
+    
+    // initialize the mBuffers member to 0
+    AudioBuffer emptyBuffer = {0};
+    size_t arrayIndex;
+    bufferList->mBuffers[0] = emptyBuffer;
+    
+    // set up the AudioBuffer structs in the buffer list
+    bufferList->mBuffers[0].mNumberChannels  = 1;
+    bufferList->mBuffers[0].mDataByteSize    = totalFramesInFile * sizeof (AudioSampleType);
+    bufferList->mBuffers[0].mData            = followerSoundStructs[0].audioData;
+    
+    // Perform a synchronous, sequential read of the audio data out of the file and
+    //    into the soundStructArray[audioFile].audioDataLeft and (if stereo) .audioDataRight members.
+    UInt32 numberOfPacketsToRead = (UInt32) totalFramesInFile;
+    
+    result = ExtAudioFileRead (audioFileObject, &numberOfPacketsToRead, bufferList);
+    
+    free (bufferList);
+    
+    if (noErr != result) {
+        [self printErrorMessage: @"ExtAudioFileRead failure - " withStatus: result];
+        free (followerSoundStructs[0].audioData);
+        ExtAudioFileDispose (audioFileObject);
+        return;
+    }
+    
+    NSLog (@"Finished reading file into memory");
+    
+    // Initialize all soundStructs to start at sample zero, and not be playing
+    for(int i = 0; i<kNumFollowerSources; i++){
+        followerSoundStructs[i].sampleNumber = 0;
+        followerSoundStructs[i].shouldPlay = false;
+    }
+    
+    // Dispose of the extended audio file object, which also
+    //    closes the associated file.
+    ExtAudioFileDispose (audioFileObject);
+}
+
 - (void)initializeAUGraph {
     
     NSLog (@"Configuring and then initializing audio processing graph");
@@ -463,7 +586,7 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
     
 //............................................................................
 // 3DMixer unit Setup
-    UInt32 busCount = kNumAudioSources + 1;      // bus count for mixer unit input +1 for bleep sound
+    UInt32 busCount = kNumAudioSources + kNumFollowerSources + 1;      // bus count for mixer unit input +1 for bleep sound + follower sources
     NSLog (@"Setting mixer unit input bus count to: %lu", busCount);
     result = AudioUnitSetProperty (
                                    tdMixerUnit,
@@ -493,6 +616,21 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
         if (noErr != result) {[self printErrorMessage: @"AUGraphSetNodeInputCallback" withStatus: result]; return;}
     }
     
+    //add the follower sounds
+    for (UInt16 i = kNumAudioSources; i < (kNumAudioSources + kNumFollowerSources); i++) {
+        AURenderCallbackStruct inputCallbackStruct;
+        inputCallbackStruct.inputProc        = &renderInput;
+        inputCallbackStruct.inputProcRefCon  = &followerSoundStructs[i];
+        
+        result = AUGraphSetNodeInputCallback (
+                                              mGraph,
+                                              tdMixerNode,
+                                              i,
+                                              &inputCallbackStruct
+                                              );
+        if (noErr != result) {[self printErrorMessage: @"AUGraphSetNodeInputCallback" withStatus: result]; return;}
+    }
+    
     //add the bleep sound
     AURenderCallbackStruct inputCallbackStruct;
     inputCallbackStruct.inputProc = &renderInput;
@@ -500,7 +638,7 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
     result = AUGraphSetNodeInputCallback (
                                           mGraph,
                                           tdMixerNode,
-                                          kNumAudioSources, //bleep sound
+                                          kNumAudioSources + kNumFollowerSources, //bleep sound
                                           &inputCallbackStruct
                                           );
     if (noErr != result) {[self printErrorMessage: @"AUGraphSetNodeInputCallback" withStatus: result]; return;}
@@ -508,8 +646,8 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
     
 //............................................................................
 // Set audio Stream formats
-    // regular sounds plus bleep sound
-    for (UInt16 i = 0; i < kNumAudioSources + 1; i++) {
+    // regular sounds plus bleep sound plus follower sounds
+    for (UInt16 i = 0; i < kNumAudioSources + kNumFollowerSources + 1; i++) {
         result = AudioUnitSetProperty (
                                        tdMixerUnit,
                                        kAudioUnitProperty_StreamFormat,
@@ -535,7 +673,7 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
 //...........................................................................
 // Customize 3DMixer properties
     
-    if(false){
+    if(false){//----- OFF -----//
         UInt32        reverbSetting    = 1; // turn it on;
         result = AudioUnitSetProperty(tdMixerUnit,
                                       kAudioUnitProperty_UsesInternalReverb,
@@ -551,8 +689,8 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
     MixerDistanceParams distanceParams;
     UInt32 dataSize = sizeof(distanceParams);
     
-    //bleep sound included in this.
-    for(UInt32 i = 0; i < kNumAudioSources + 1; i++){
+    //bleep sound and follower sounds included in this.
+    for(UInt32 i = 0; i < kNumAudioSources + kNumFollowerSources + 1; i++){
         
         distanceParams.mMaxDistance = (Float32) 1000.0;
         distanceParams.mMaxAttenuation = (Float32) 60.0;
@@ -628,10 +766,11 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
     if (noErr != result) {[self printErrorMessage: @"AUGraphInitialize" withStatus: result]; return;}
     
     self.nextAvailableUnit = 0; //this is basically a pointer to the next unit to use
+    self.nextAvailableFollowerUnit = kNumAudioSources;
+    self.bleepOutBus = kNumAudioSources + kNumFollowerSources;
 }
 
-
-
+/*
 - (void)playSoundWithAzimuth:(float) azimuth withDistance:(float) distance{
     OSStatus result;
     
@@ -705,7 +844,6 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
                                        nextAvailableUnit, 
                                        (AudioUnitParameterValue) pitch, 
                                        0);
-        
        DLog(@"\n\tPing: \
               \n\tdistance = %f\
               \n\tazimuth  = %f\
@@ -718,67 +856,82 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
         nextAvailableUnit = ( nextAvailableUnit + 1 )% kNumAudioSources;
     }
 }
+*/
+
+- (void)playBus:(int)bus WithAzimuth:(float)azimuth withDistance:(float)distance withPitchChange:(float)pitch{
+    OSStatus result;
+    //clamp the attenuation
+    distance = distance > MAX_ATTENUATION_DISTANCE ? MAX_ATTENUATION_DISTANCE : distance;
+    @synchronized(self){
+        result = AudioUnitSetParameter(tdMixerUnit,
+                                       k3DMixerParam_Azimuth,
+                                       kAudioUnitScope_Input,
+                                       bus,
+                                       azimuth,
+                                       0);
+        result = AudioUnitSetParameter(
+                                       tdMixerUnit,
+                                       k3DMixerParam_Distance,
+                                       kAudioUnitScope_Input,
+                                       bus,
+                                       distance,
+                                       0);
+        result = AudioUnitSetParameter(
+                                       tdMixerUnit,
+                                       k3DMixerParam_Enable,
+                                       kAudioUnitScope_Input,
+                                       bus,
+                                       (AudioUnitParameterValue) true,
+                                       0);
+        
+        result = AudioUnitSetParameter(
+                                       tdMixerUnit,
+                                       k3DMixerParam_PlaybackRate,
+                                       kAudioUnitScope_Input,
+                                       bus,
+                                       (AudioUnitParameterValue) pitch,
+                                       0);
+        DLog(@"\n\tPing: \
+             \n\tdistance = %f\
+             \n\tazimuth  = %f\
+             \n\tD pich   = %f\
+             \n\tchannel  = %d",
+             (distance), azimuth, pitch, nextAvailableUnit);
+        AUGraphUpdate(mGraph, NULL);
+    }
+}
 
 - (void) playSound:(NSString *) sound withAzimuth:(float) azimuth withDistance: (float)distance withPitchChange:(float)pitch{
     
-    //clamp the attenuation
-    distance = distance > MAX_ATTENUATION_DISTANCE ? MAX_ATTENUATION_DISTANCE : distance;
-    
     if([sound isEqualToString:@"bleep"]){
-        OSStatus result;
-        @synchronized(self){
-            result = AudioUnitSetParameter(tdMixerUnit,
-                                           k3DMixerParam_Azimuth,
-                                           kAudioUnitScope_Input,
-                                           bleepOutBus,
-                                           azimuth,
-                                           0);
-            result = AudioUnitSetParameter(
-                                           tdMixerUnit,
-                                           k3DMixerParam_Distance,
-                                           kAudioUnitScope_Input,
-                                           bleepOutBus,
-                                           distance,
-                                           0);
-            result = AudioUnitSetParameter(
-                                           tdMixerUnit,
-                                           k3DMixerParam_Enable,
-                                           kAudioUnitScope_Input,
-                                           bleepOutBus,
-                                           (AudioUnitParameterValue) true,
-                                           0);
-            
-            result = AudioUnitSetParameter(
-                                           tdMixerUnit,
-                                           k3DMixerParam_PlaybackRate,
-                                           kAudioUnitScope_Input,
-                                           bleepOutBus,
-                                           (AudioUnitParameterValue) pitch,
-                                           0);
-            
-            DLog(@"\n\tPing: \
-                  \n\tdistance = %f\
-                  \n\tazimuth  = %f\
-                  \n\tD pich   = %f\
-                  \n\tchannel  = %d",
-                  (distance), azimuth, pitch, nextAvailableUnit);
-            AUGraphUpdate(mGraph, NULL);
-            bleepOutStruct.sampleNumber = 0;
-            bleepOutStruct.shouldPlay = true;
-        }
+        [self playBus:bleepOutBus WithAzimuth:azimuth withDistance:distance withPitchChange:pitch];
+        bleepOutStruct.sampleNumber = 0;
+        bleepOutStruct.shouldPlay = true;
         return;
     }
     
     if([sound isEqualToString:@"default"]){
-        [self playSoundWithAzimuth:azimuth withDistance:distance withPitchChange:pitch];
+        [self playBus:nextAvailableUnit WithAzimuth:azimuth withDistance:distance withPitchChange:distance];
+        soundSourceStructs[nextAvailableUnit].sampleNumber = 0;
+        soundSourceStructs[nextAvailableUnit].shouldPlay = true;
+        nextAvailableUnit = (nextAvailableUnit + 1) % kNumAudioSources;
         return;
     }
     
+    if([sound isEqualToString:@"follower"]){
+        [self playBus:nextAvailableFollowerUnit WithAzimuth:azimuth withDistance:distance withPitchChange:pitch];
+        int index = nextAvailableFollowerUnit - sizeof(soundSourceStructs);
+        assert(index >= 0 && index < sizeof(followerSoundStructs));
+        followerSoundStructs[index].sampleNumber = 0;
+        followerSoundStructs[index].shouldPlay = true;
+        nextAvailableFollowerUnit = ((index + 1) % kNumFollowerSources) + kNumAudioSources;
+        return;
+    }
     NSLog(@"attempted to play unknown sound \a");
 }
 
 - (void) turnByDegrees:(float) dHeading{
-    for(UInt32 i = 0; i<kNumAudioSources; i++){
+    for(UInt32 i = 0; i< (kNumAudioSources + kNumFollowerSources); i++){
         
         //Get the current azimuth for the channel
         AudioUnitParameterValue currentAzimuth;
@@ -805,7 +958,6 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
                               (AudioUnitParameterValue) newAzimuth, 
                               0);
         AUGraphUpdate(mGraph, NULL);
-        
     }
 }
 
