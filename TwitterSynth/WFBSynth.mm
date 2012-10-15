@@ -771,8 +771,9 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
     self.bleepOutBus = kNumAudioSources + kNumFollowerSources;
 }
 
-- (void)playBus:(int)bus WithAzimuth:(float)azimuth withDistance:(float)distance withPitchChange:(float)pitch{
+- (void)playBus:(int)bus WithAzimuth:(float)azimuth withDistance:(float)distance withPitchChange:(Float32)pitch{
     OSStatus result;
+    NSLog(@"pitch: %f", pitch);
     //clamp the attenuation
     distance = distance > MAX_ATTENUATION_DISTANCE ? MAX_ATTENUATION_DISTANCE : distance;
     @synchronized(self){
@@ -805,18 +806,21 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
                                        (AudioUnitParameterValue) pitch,
                                        0);
         
-        /*DLog(@"\n\tPing: \
+        DLog(@"\n\tPing: \
              \n\tdistance = %f\
              \n\tazimuth  = %f\
              \n\tD pich   = %f\
              \n\tchannel  = %d",
              (distance), azimuth, pitch, nextAvailableUnit);
-         */
+         
         AUGraphUpdate(mGraph, NULL);
     }
 }
 
-- (void) playSound:(NSString *) sound withAzimuth:(float) azimuth withDistance: (float)distance withPitchChange:(float)pitch{
+- (void) playSound:(NSString *) sound
+       withAzimuth:(float) azimuth
+      withDistance:(float)distance
+   withPitchChange:(Float32)pitch {
     
     if([sound isEqualToString:@"bleep"]){
         [self playBus:bleepOutBus WithAzimuth:azimuth withDistance:distance withPitchChange:pitch];
@@ -826,7 +830,7 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
     }
     
     if([sound isEqualToString:@"default"]){
-        [self playBus:nextAvailableUnit WithAzimuth:azimuth withDistance:distance withPitchChange:distance];
+        [self playBus:nextAvailableUnit WithAzimuth:azimuth withDistance:distance withPitchChange:pitch];
         soundSourceStructs[nextAvailableUnit].sampleNumber = 0;
         soundSourceStructs[nextAvailableUnit].shouldPlay = true;
         nextAvailableUnit = (nextAvailableUnit + 1) % kNumAudioSources;

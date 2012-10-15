@@ -68,8 +68,15 @@ typedef struct {
 
 /** Interface for outside classes to fiddle with parameters **/
 - (void) playSoundWithAzimuth:(float)azimuth withDistance:(float)distance;
-- (void) playSoundWithAzimuth:(float)azimuth withDistance:(float)distance withPitchChange:(float)pitch;
-- (void) playSound:(NSString *) sound withAzimuth:(float) azimuth withDistance: (float)distance withPitchChange:(float)pitch;
+
+- (void) playSoundWithAzimuth:(float)azimuth
+                 withDistance:(float)distance
+              withPitchChange:(Float32)pitch;
+
+- (void) playSound:(NSString *) sound
+       withAzimuth:(float) azimuth
+      withDistance:(float)distance
+   withPitchChange:(Float32)pitch;
 
 - (void) turnByDegrees:(float) dHeading;
 - (void) startAUGraph;

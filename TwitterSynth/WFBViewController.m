@@ -9,12 +9,6 @@
 #import "WFBViewController.h"
 //111,000m in 1 degree
 
-#define MIN_PLAYBACK_RATE .25
-#define MAX_PLAYBACK_RATE 1.75
-
-#define MIN_FOLLOWER_COUNT 20
-#define MAX_FOLLOWER_COUNT 3000
-
 @interface WFBViewController(){
     bool shouldStream;
     bool isStreaming;
@@ -57,13 +51,18 @@
 #define WFBLocationAquired              @"WFBLocationAquired"
 #define WFBFailedToAquireLocation       @"WFBFailedToAquireLocation"
 
+const Float32 MIN_PLAYBACK_RATE = .25;
+const Float32 MAX_PLAYBACK_RATE = 1.75;
+const Float32 MIN_FOLLOWER_COUNT = 20.0;
+const Float32 MAX_FOLLOWER_COUNT = 3000;
+
 - (id) initWithCoder:(NSCoder *)aDecoder{
     if(self = [super initWithCoder:aDecoder]){
         self.shouldPlay = false;
         self.isPlaying = false;
         self.shouldStream = false;
         self.isStreaming = false;
-        self.boundingBoxSize = 150000;
+        self.boundingBoxSize = 180000;
         
         self.bleepProfanities = true;
         [WFBSoundSourceManager loadSoundSourceList];
@@ -124,6 +123,16 @@
 
 - (void) viewDidLoad
 {
+    //set sonar_ping to default sound
+    NSArray *sounds = [WFBSoundSourceManager getSounds];
+    for(int i = 0; i < sounds.count; i++){
+        if([[sounds objectAtIndex:i] isEqualToString:@"sonar_ping"]){
+            [soundPicker selectRow:i inComponent:0 animated:NO];
+            NSString *soundUrl = [WFBSoundSourceManager getURLForSound:[sounds objectAtIndex: i]];
+            [synth readAudioFileIntoMemory:soundUrl];
+        }
+    }
+    
     [super viewDidLoad];
 }
 
@@ -276,7 +285,11 @@
                       \n\tdistance = %f\
                       \n\tbearing  = %f\
                       \n\ttext     = %@", latitude, longitude, distance, bearing,text);
-                [self.tweetLabel setText:text];
+                if([self countProfanities:text] > 0){
+                    [self.tweetLabel setText:@"********************************"];
+                }else {
+                    [self.tweetLabel setText:text];
+                }
 
                 //play some sound
                 if(self.isPlaying){
@@ -290,27 +303,32 @@
                     }
 
                     //figure out the playback rate to use based on followers_count
-                    float playbackRate = MAX_PLAYBACK_RATE;
+                    Float32 playbackRate = MAX_PLAYBACK_RATE;
                     NSDictionary *user = [tweet objectForKey:@"user"];
                     if(![user isEqual:[NSNull null]]){
                         int followersCount = [[user objectForKey:@"followers_count"] intValue];
                         DLog(@"followersCount: %d", followersCount);
-                        if(followersCount < MIN_FOLLOWER_COUNT) playbackRate = MIN_PLAYBACK_RATE;
-                        if(followersCount > MAX_FOLLOWER_COUNT) playbackRate = MAX_PLAYBACK_RATE;
+                        if(followersCount < MIN_FOLLOWER_COUNT) playbackRate = MAX_PLAYBACK_RATE;
+                        if(followersCount > MAX_FOLLOWER_COUNT) playbackRate = MIN_PLAYBACK_RATE;
                         if(followersCount >= MIN_FOLLOWER_COUNT && followersCount <= MAX_FOLLOWER_COUNT){
                             //compute playback rate from follower count
-                            double rise = MIN_PLAYBACK_RATE - MAX_PLAYBACK_RATE;
-                            double run = MAX_FOLLOWER_COUNT - MIN_FOLLOWER_COUNT;
-                            double slope = rise/run;
-                            double intercept = MIN_PLAYBACK_RATE - MAX_FOLLOWER_COUNT * slope;
+                            //playback rate is inversely and linearly related to the follower count
+                            Float32 rise = MIN_PLAYBACK_RATE - MAX_PLAYBACK_RATE;
+                            Float32 run = MAX_FOLLOWER_COUNT - MIN_FOLLOWER_COUNT;
+                            Float32 slope = rise/run;
+                            Float32 intercept = MIN_PLAYBACK_RATE - MAX_FOLLOWER_COUNT * slope;
                             playbackRate = followersCount * slope + intercept;
+                            NSLog(@"playback rate: %f", playbackRate);
                         }
                         
+                        /* this doesnt work because twitter API lied
                         if([self isFollower:user]){
                             NSLog(@"FOLLOWER TWEETED");
                             sound = @"follower";
                         }
+                        */
                     }
+                    NSLog(@"playback rate: %f", playbackRate);
                     [synth playSound:sound
                          withAzimuth:(bearing - 180.0f)
                         withDistance:(float) ((distance / maxDistance) * 20 + 1)
@@ -327,6 +345,9 @@
     }
 }
 
+// I tried to implement a feature that would play a different sond for
+//  tweets that came from users that the user was following
+//  however the twitter API did not actually deliver the field as promised
 -(bool)isFollower: (NSDictionary *) userDict{
     if([userDict isEqual:[NSNull null]]) return false;
     if(![[userDict objectForKey:@"screen_name"] isEqual:[NSNull null]]) NSLog(@"%@", userDict);
