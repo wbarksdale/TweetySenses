@@ -20,6 +20,7 @@
     WFBSynth *synth;
 
     bool bleepProfanities;
+    bool playFollowerSound;
     
     int boundingBoxSize;
     IBOutlet UIPickerView *soundPicker;
@@ -34,6 +35,7 @@
 - (void) stopTrackingLocation;
 
 @property(nonatomic) bool bleepProfanities;
+@property(nonatomic) bool playFollowerSound;
 @property(nonatomic) int boundingBoxSize;
 
 @property(nonatomic, strong) IBOutlet UIPickerView *soundPicker;

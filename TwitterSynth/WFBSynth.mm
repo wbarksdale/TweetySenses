@@ -118,6 +118,7 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
         [self setupStereoStreamFormat];
         [self readAudioFileIntoMemory:[WFBSoundSourceManager defaultSoundUrl]];
         [self readBleepSoundIntoMemory:[WFBSoundSourceManager bleepSoundUrl]];
+        [self readFollowerSoundIntoMemory:[WFBSoundSourceManager defaultSoundUrl]];
         [self initializeAUGraph];
     }
     return self;
@@ -620,7 +621,7 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
     for (UInt16 i = kNumAudioSources; i < (kNumAudioSources + kNumFollowerSources); i++) {
         AURenderCallbackStruct inputCallbackStruct;
         inputCallbackStruct.inputProc        = &renderInput;
-        inputCallbackStruct.inputProcRefCon  = &followerSoundStructs[i];
+        inputCallbackStruct.inputProcRefCon  = &followerSoundStructs[i - kNumAudioSources];
         
         result = AUGraphSetNodeInputCallback (
                                               mGraph,
@@ -770,94 +771,6 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
     self.bleepOutBus = kNumAudioSources + kNumFollowerSources;
 }
 
-/*
-- (void)playSoundWithAzimuth:(float) azimuth withDistance:(float) distance{
-    OSStatus result;
-    
-    //clamp the attenuation
-    distance = distance > MAX_ATTENUATION_DISTANCE ? MAX_ATTENUATION_DISTANCE : distance;
-    
-    @synchronized(self){
-        result = AudioUnitSetParameter(tdMixerUnit, 
-                              k3DMixerParam_Azimuth, 
-                              kAudioUnitScope_Input, 
-                              nextAvailableUnit, 
-                              azimuth, 
-                              0);
-        result = AudioUnitSetParameter(
-                              tdMixerUnit,
-                              k3DMixerParam_Distance, 
-                              kAudioUnitScope_Input,
-                              nextAvailableUnit,
-                              distance, 
-                                       0);
-        result = AudioUnitSetParameter(
-                                       tdMixerUnit,
-                                       k3DMixerParam_Enable,
-                                       kAudioUnitScope_Input,
-                                       nextAvailableUnit,
-                                       (AudioUnitParameterValue) true,
-                                       0);
-       DLog(@"\n\tPing: \
-              \n\tdistance = %f\
-              \n\tazimuth  = %f\
-              \n\tchannel  = %d", 
-              (distance), azimuth, nextAvailableUnit);
-        AUGraphUpdate(mGraph, NULL);
-        soundSourceStructs[nextAvailableUnit].sampleNumber = 0;
-        soundSourceStructs[nextAvailableUnit].shouldPlay = true;
-        nextAvailableUnit = ( nextAvailableUnit + 1 )% kNumAudioSources;
-    }
-}
-
-//pitchChange .5 = half speed, pitchChange 2.0 = double speed
-- (void)playSoundWithAzimuth:(float)azimuth withDistance:(float)distance withPitchChange:(float)pitch{
-    OSStatus result;
-    //clamp the attenuation
-    distance = distance > MAX_ATTENUATION_DISTANCE ? MAX_ATTENUATION_DISTANCE : distance;
-    @synchronized(self){
-        result = AudioUnitSetParameter(tdMixerUnit, 
-                                       k3DMixerParam_Azimuth, 
-                                       kAudioUnitScope_Input, 
-                                       nextAvailableUnit, 
-                                       azimuth, 
-                                       0);
-        result = AudioUnitSetParameter(
-                                       tdMixerUnit,
-                                       k3DMixerParam_Distance, 
-                                       kAudioUnitScope_Input,
-                                       nextAvailableUnit,
-                                       distance, 
-                                       0);
-        result = AudioUnitSetParameter(
-                                       tdMixerUnit,
-                                       k3DMixerParam_Enable,
-                                       kAudioUnitScope_Input,
-                                       nextAvailableUnit,
-                                       (AudioUnitParameterValue) true,
-                                       0);
-        
-        result = AudioUnitSetParameter(
-                                       tdMixerUnit, 
-                                       k3DMixerParam_PlaybackRate, 
-                                       kAudioUnitScope_Input, 
-                                       nextAvailableUnit, 
-                                       (AudioUnitParameterValue) pitch, 
-                                       0);
-       DLog(@"\n\tPing: \
-              \n\tdistance = %f\
-              \n\tazimuth  = %f\
-              \n\tD pich   = %f\
-              \n\tchannel  = %d", 
-              (distance), azimuth, pitch, nextAvailableUnit);
-        AUGraphUpdate(mGraph, NULL);
-        soundSourceStructs[nextAvailableUnit].sampleNumber = 0;
-        soundSourceStructs[nextAvailableUnit].shouldPlay = true;
-        nextAvailableUnit = ( nextAvailableUnit + 1 )% kNumAudioSources;
-    }
-}
-*/
-
 - (void)playBus:(int)bus WithAzimuth:(float)azimuth withDistance:(float)distance withPitchChange:(float)pitch{
     OSStatus result;
     //clamp the attenuation
@@ -891,12 +804,14 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
                                        bus,
                                        (AudioUnitParameterValue) pitch,
                                        0);
-        DLog(@"\n\tPing: \
+        
+        /*DLog(@"\n\tPing: \
              \n\tdistance = %f\
              \n\tazimuth  = %f\
              \n\tD pich   = %f\
              \n\tchannel  = %d",
              (distance), azimuth, pitch, nextAvailableUnit);
+         */
         AUGraphUpdate(mGraph, NULL);
     }
 }
@@ -915,16 +830,20 @@ static OSStatus renderInput(void *inRefCon, AudioUnitRenderActionFlags *ioAction
         soundSourceStructs[nextAvailableUnit].sampleNumber = 0;
         soundSourceStructs[nextAvailableUnit].shouldPlay = true;
         nextAvailableUnit = (nextAvailableUnit + 1) % kNumAudioSources;
+        NSLog(@"nextAvailableUnit: %d", nextAvailableUnit);
         return;
     }
     
     if([sound isEqualToString:@"follower"]){
         [self playBus:nextAvailableFollowerUnit WithAzimuth:azimuth withDistance:distance withPitchChange:pitch];
-        int index = nextAvailableFollowerUnit - sizeof(soundSourceStructs);
-        assert(index >= 0 && index < sizeof(followerSoundStructs));
+        
+        //convert the bus number to an index into the followerSoundStructs array
+        int index = nextAvailableFollowerUnit - kNumAudioSources;
+        assert(index >= 0 && index < kNumFollowerSources);
         followerSoundStructs[index].sampleNumber = 0;
         followerSoundStructs[index].shouldPlay = true;
         nextAvailableFollowerUnit = ((index + 1) % kNumFollowerSources) + kNumAudioSources;
+        NSLog(@"nextFOLLOWERUnit: %d", nextAvailableFollowerUnit);
         return;
     }
     NSLog(@"attempted to play unknown sound \a");

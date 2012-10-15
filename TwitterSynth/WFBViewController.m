@@ -27,6 +27,7 @@
 @property(nonatomic) bool isPlaying;
 
 -(void) startTwitterStream;
+-(bool) isFollower:(NSDictionary *)userDict;
 
 @end
 
@@ -45,6 +46,7 @@
 @synthesize soundPicker;
 @synthesize tweetLabel;
 @synthesize boundingBoxSize;
+@synthesize playFollowerSound;
 
 @synthesize shouldStream;
 @synthesize isStreaming;
@@ -275,7 +277,7 @@
                       \n\tbearing  = %f\
                       \n\ttext     = %@", latitude, longitude, distance, bearing,text);
                 [self.tweetLabel setText:text];
-                
+
                 //play some sound
                 if(self.isPlaying){
                     double maxDistance = sqrt( (double) (2.0 * self.boundingBoxSize * self.boundingBoxSize) );
@@ -303,6 +305,11 @@
                             double intercept = MIN_PLAYBACK_RATE - MAX_FOLLOWER_COUNT * slope;
                             playbackRate = followersCount * slope + intercept;
                         }
+                        
+                        if([self isFollower:user]){
+                            NSLog(@"FOLLOWER TWEETED");
+                            sound = @"follower";
+                        }
                     }
                     [synth playSound:sound
                          withAzimuth:(bearing - 180.0f)
@@ -318,6 +325,13 @@
     }else{
         //NSLog(@"badtweet");
     }
+}
+
+-(bool)isFollower: (NSDictionary *) userDict{
+    if([userDict isEqual:[NSNull null]]) return false;
+    if(![[userDict objectForKey:@"screen_name"] isEqual:[NSNull null]]) NSLog(@"%@", userDict);
+    if([[userDict objectForKey:@"following"] isEqual:[NSNull null]]) return false;
+    return [[userDict objectForKey:@"following"] boolValue];
 }
 
 - (void) laggingStream: (NSString *) message{

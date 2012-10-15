@@ -9,9 +9,10 @@
 #import <Foundation/Foundation.h>
 
 @interface WFBSoundSourceManager : NSObject{
-    
+    NSString *followerSound;
 }
 
+@property(atomic, strong) NSString *followerSound;
 + (void) loadSoundSourceList;
 + (NSArray *) getSounds;
 + (NSString *) getURLForSound: (NSString *) soundName;

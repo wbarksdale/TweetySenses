@@ -11,6 +11,7 @@
 #define kSoundsDirectory @"tweetsounds"
 
 @implementation WFBSoundSourceManager
+@synthesize followerSound;
 
 static NSString __strong *baseUrl = nil;
 static NSArray __strong *soundSourceNames = nil;
@@ -52,7 +53,7 @@ static NSArray __strong *soundSourceNames = nil;
 }
 
 + (NSString *) getURLForSound: (NSString *) soundName{
-    return [baseUrl stringByAppendingPathComponent:[soundName stringByAppendingString:@".caf"]];
+   return [baseUrl stringByAppendingPathComponent:[soundName stringByAppendingString:@".caf"]];
 }
 
 @end

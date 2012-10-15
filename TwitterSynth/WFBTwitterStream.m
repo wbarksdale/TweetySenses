@@ -100,6 +100,7 @@
                                  [params setObject:@"1" forKey:@"include_entities"];
                                  [params setObject:location forKey:@"locations"];
                                  [params setObject:@"true" forKey:@"stall_warnings"];
+                                 [params setObject:@"with" forKey:@"followings"];
                                  //set any other criteria to track
                                  //params setObject:@"words, to track" forKey@"track"];
                                  
