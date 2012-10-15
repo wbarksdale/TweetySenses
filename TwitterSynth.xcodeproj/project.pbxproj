@@ -318,6 +318,7 @@
 		5AACA2101582E23A0012C2E4 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "TwitterSynth/TwitterSynth-Prefix.pch";
 				INFOPLIST_FILE = "TwitterSynth/TwitterSynth-Info.plist";
@@ -333,6 +334,7 @@
 		5AACA2111582E23A0012C2E4 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "TwitterSynth/TwitterSynth-Prefix.pch";
 				INFOPLIST_FILE = "TwitterSynth/TwitterSynth-Info.plist";
