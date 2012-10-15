@@ -24,6 +24,7 @@ The view controller class became a little awkward due to the fact that everythin
 ## License / Copyright or whatever
 I really hope someone will pick up this project and make a killer app, I think a designer could really make it pop, and maybe even make it worth a go in the App Store. All I ask is that if you use the project, you credit me in some public fashion when you publish to the app store. If someone wants to work together with me on it to developer further, I might be interested.
 
--->William Barksdale<--
--->wfbarksdale@gmail.com<--
--->www.williambarksdale.com<--
+## Contact
+William Barksdale  
+wfbarksdale@gmail.com  
+www.williambarksdale.com  
